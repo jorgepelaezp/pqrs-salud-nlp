@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Triaje de PQRS · Grupo 02</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--ink:#14262b;--mute:#5b6b70;--line:#d5dfe0;--bg:#f3f6f6;--card:#fff;--baja:#2f8f6b;--media:#d98a1c;--alta:#c8352e;--acc:#0e5a66}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Public Sans",system-ui,sans-serif}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;line-height:1.15;margin:0}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+header{background:var(--ink);color:#eaf2f2;padding:44px 0 56px}
+header h1{font-size:clamp(30px,5vw,48px);max-width:16ch}
+header p{max-width:60ch;color:#b8cacc;margin:14px 0 0}
+.meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.meta span{border:1px solid #3a5358;border-radius:6px;padding:4px 10px;font-size:13px;color:#cfe0e1}
+main{margin-top:-30px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:24px;margin-bottom:22px}
+h2{font-size:24px;margin-bottom:6px}
+.sub{color:var(--mute);margin:0 0 18px;font-size:15px}
+.demo{display:grid;grid-template-columns:1.1fr 1fr;gap:24px}
+textarea{width:100%;min-height:150px;resize:vertical;border:1px solid var(--line);border-radius:8px;padding:12px;font:inherit;color:var(--ink)}
+textarea:focus,button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+button{font:inherit;cursor:pointer;border-radius:8px;padding:9px 16px;border:1px solid var(--line);background:#fff;color:var(--ink)}
+button.main{background:var(--acc);color:#fff;border-color:var(--acc);font-weight:600}
+button.ej{font-size:13px;padding:6px 10px;color:var(--mute)}
+.res{display:flex;flex-direction:column;gap:14px}
+.badge{border-radius:8px;padding:16px;color:#fff;background:#8a9a9d}
+.badge small{display:block;opacity:.85;font-size:13px}
+.badge b{font:700 34px Fraunces,Georgia,serif;text-transform:capitalize}
+.b-baja{background:var(--baja)}.b-media{background:var(--media)}.b-alta{background:var(--alta)}
+.bar{display:grid;grid-template-columns:60px 1fr 52px;align-items:center;gap:10px;font-size:14px;margin:6px 0}
+.bar i{display:block;height:10px;border-radius:5px;background:#e6eded;overflow:hidden}
+.bar i u{display:block;height:100%;transition:width .4s}
+.proc{font-size:13px;color:var(--mute);word-break:break-word}
+.proc code{background:#eef3f3;padding:2px 5px;border-radius:4px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}
+.kpi{border-left:4px solid var(--acc);padding:4px 0 4px 12px}
+.kpi b{display:block;font:700 30px Fraunces,Georgia,serif}
+.kpi span{font-size:13px;color:var(--mute)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.cv{position:relative;height:300px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+th{color:var(--mute);font-weight:500}
+.chips span{display:inline-block;margin:3px 4px 3px 0;padding:3px 10px;border-radius:99px;font-size:13px;color:#fff}
+.note{font-size:13px;color:var(--mute);margin-top:10px}
+footer{padding:10px 0 40px;color:var(--mute);font-size:13px}
+@media(max-width:780px){.demo,.grid2{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.bar i u{transition:none}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <h1>Qué PQRS se atiende primero</h1>
+  <p>Modelo que lee el texto de una petición, queja o reclamo del sector salud y le asigna urgencia baja, media o alta. Datos sintéticos, sin información de pacientes reales.</p>
+  <div class="meta"><span>Grupo 02</span><span>TF-IDF + Naive Bayes</span><span>Proyecto de Aula, Fase 2</span><span id="m-arch">Cargando modelo…</span></div>
+</div></header>
+
+<main class="wrap">
+<section class="card">
+  <h2>Pruébalo con un texto</h2>
+  <p class="sub">Escribe una PQRS o elige un ejemplo. Responde el modelo real guardado en <code>models/</code>.</p>
+  <div class="demo">
+    <div>
+      <textarea id="txt" placeholder="Ej.: Mi madre no ha recibido la insulina, es de vida o muerte."></textarea>
+      <div class="btns">
+        <button class="main" id="go">Clasificar urgencia</button>
+        <button class="ej" data-t="Mi madre no ha recibido la insulina, es de vida o muerte. Necesitamos autorización de cirugía urgente.">Ejemplo alta</button>
+        <button class="ej" data-t="Llevo tres semanas esperando la asignación de una cita y el trámite está estancado.">Ejemplo media</button>
+        <button class="ej" data-t="Sugiero poner un ventilador en la sala de espera y ampliar el horario de atención.">Ejemplo baja</button>
+      </div>
+    </div>
+    <div class="res" aria-live="polite">
+      <div class="badge" id="badge"><small>Urgencia predicha</small><b id="pred">Sin resultado</b></div>
+      <div id="probs"></div>
+      <div class="proc" id="proc"></div>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Qué tan bien funciona</h2>
+  <p class="sub">Conjunto de prueba de 584 PQRS que el modelo nunca vio durante el entrenamiento.</p>
+  <div class="kpis">
+    <div class="kpi"><b>0,838</b><span>F1 macro (meta ≥ 0,75, cumplida)</span></div>
+    <div class="kpi"><b>0,841</b><span>Exactitud</span></div>
+    <div class="kpi"><b>0,832</b><span>Recall de «alta» (meta ≥ 0,85, no concluyente)</span></div>
+    <div class="kpi"><b>0,805–0,868</b><span>Intervalo de confianza 95 % del F1 macro</span></div>
+  </div>
+</section>
+
+<section class="grid2">
+  <div class="card"><h3>Comparación de modelos</h3><p class="sub">F1 macro en prueba. Los baselines quedan muy por debajo.</p><div class="cv"><canvas id="c1"></canvas></div></div>
+  <div class="card"><h3>Desempeño por clase</h3><p class="sub">Naive Bayes, conjunto de prueba.</p><div class="cv"><canvas id="c2"></canvas></div></div>
+  <div class="card"><h3>Detectar más urgencias cuesta falsas alarmas</h3><p class="sub">Factor de decisión de «alta», validación cruzada.</p><div class="cv"><canvas id="c3"></canvas></div></div>
+  <div class="card"><h3>Distribución de urgencia</h3><p class="sub">Datos tras la limpieza (2.917 registros).</p><div class="cv"><canvas id="c4"></canvas></div></div>
+</section>
+
+<section class="grid2">
+  <div class="card"><h3>Qué contiene el modelo</h3><p class="sub">Leído del archivo guardado.</p>
+    <table id="tinfo"><tbody><tr><td>Cargando…</td></tr></tbody></table></div>
+  <div class="card"><h3>Palabras que más pesan (con stemming)</h3><p class="sub">Términos asociados a cada nivel.</p>
+    <div class="chips">
+      <b>Baja</b><br><span style="background:var(--baja)">pong</span><span style="background:var(--baja)">ventil</span><span style="background:var(--baja)">suger</span><span style="background:var(--baja)">vigil</span><span style="background:var(--baja)">horari</span><br>
+      <b>Media</b><br><span style="background:var(--media)">demor</span><span style="background:var(--media)">deficient</span><span style="background:var(--media)">estanc</span><span style="background:var(--media)">inventari</span><span style="background:var(--media)">asign</span><br>
+      <b>Alta</b><br><span style="background:var(--alta)">cirugi</span><span style="background:var(--alta)">autoriz</span><span style="background:var(--alta)">riesg</span><span style="background:var(--alta)">vital</span><span style="background:var(--alta)">rechaz</span><span style="background:var(--alta)">clinic</span>
+    </div>
+    <p class="note">Limitación: los textos salen de bancos de frases finitos con 8 % de ruido en la etiqueta. Con PQRS reales el desempeño probablemente sería menor.</p>
+  </div>
+</section>
+</main>
+<footer><div class="wrap">Grupo 02 · Lic. Tonny Jiménez · Valledupar, 2026. Las métricas provienen del documento técnico de la Fase 2.</div></footer>
+
+<script>
+const COL={baja:'#2f8f6b',media:'#d98a1c',alta:'#c8352e'};
+const $=id=>document.getElementById(id);
+const clean=s=>String(s);
+
+async function cargarInfo(){
+  try{
+    const d=await (await fetch('/api/info')).json();
+    $('m-arch').textContent=d.tipo+' · '+d.kb+' KB';
+    let rows=`<tr><th>Objeto</th><td>${clean(d.tipo)}</td></tr>`;
+    d.pasos.forEach(p=>{rows+=`<tr><th>Paso «${clean(p.nombre)}»</th><td>${clean(p.tipo)}${p.vocabulario?' · '+p.vocabulario+' términos':''}</td></tr>`});
+    rows+=`<tr><th>Clases</th><td>${d.clases.map(clean).join(', ')}</td></tr><tr><th>Modificado</th><td>${clean(d.modificado)}</td></tr>`;
+    $('tinfo').innerHTML='<tbody>'+rows+'</tbody>';
+  }catch(e){$('m-arch').textContent='Modelo no disponible'}
+}
+
+async function clasificar(){
+  const texto=$('txt').value.trim();
+  if(!texto){$('pred').textContent='Escribe un texto';return}
+  $('go').disabled=true;
+  try{
+    const r=await fetch('/api/predecir',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({texto})});
+    const d=await r.json();
+    if(!r.ok){$('pred').textContent=d.error;return}
+    $('badge').className='badge b-'+d.urgencia;
+    $('pred').textContent=d.urgencia;
+    let h='';
+    ['baja','media','alta'].forEach(c=>{
+      if(d.probabilidades[c]===undefined)return;
+      const p=d.probabilidades[c]*100;
+      h+=`<div class="bar"><span>${c}</span><i><u style="width:${p}%;background:${COL[c]}"></u></i><span>${p.toFixed(1)} %</span></div>`;
+    });
+    $('probs').innerHTML=h;
+    $('proc').innerHTML='Texto procesado: <code></code>';
+    $('proc').querySelector('code').textContent=d.procesado;
+  }catch(e){$('pred').textContent='Error de conexión'}
+  finally{$('go').disabled=false}
+}
+$('go').onclick=clasificar;
+document.querySelectorAll('.ej').forEach(b=>b.onclick=()=>{$('txt').value=b.dataset.t;clasificar()});
+
+Chart.defaults.font.family='"Public Sans",system-ui,sans-serif';
+const opt=(extra={})=>Object.assign({responsive:true,maintainAspectRatio:false},extra);
+new Chart($('c1'),{type:'bar',data:{labels:['Mayoritaria','Palabras clave','Random Forest','SVD+LDA+RF','SVD+LDA+NB','SVM lineal','Naive Bayes'],
+  datasets:[{data:[.196,.349,.831,.829,.837,.837,.838],backgroundColor:['#b7c4c6','#b7c4c6','#7fa7ad','#7fa7ad','#7fa7ad','#7fa7ad','#0e5a66']}]},
+  options:opt({indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{min:0,max:1}}})});
+new Chart($('c2'),{type:'bar',data:{labels:['Baja','Media','Alta'],datasets:[
+  {label:'Precisión',data:[.882,.801,.832],backgroundColor:'#7fa7ad'},
+  {label:'Recall',data:[.889,.794,.832],backgroundColor:'#0e5a66'},
+  {label:'F1',data:[.885,.797,.832],backgroundColor:'#14262b'}]},
+  options:opt({scales:{y:{min:.6,max:1}}})});
+new Chart($('c3'),{type:'line',data:{labels:['1,0','1,5','2,0','2,5','3,0'],datasets:[
+  {label:'Recall alta',data:[.852,.852,.861,.866,.870],borderColor:'#c8352e',backgroundColor:'#c8352e'},
+  {label:'Precisión alta',data:[.852,.830,.793,.704,.649],borderColor:'#d98a1c',backgroundColor:'#d98a1c'},
+  {label:'F1 macro',data:[.833,.828,.820,.793,.772],borderColor:'#0e5a66',backgroundColor:'#0e5a66'}]},
+  options:opt({scales:{y:{min:.6,max:.9}}})});
+new Chart($('c4'),{type:'doughnut',data:{labels:['Baja','Media','Alta'],datasets:[{data:[41.5,39.0,19.4],backgroundColor:[COL.baja,COL.media,COL.alta]}]},
+  options:opt({plugins:{tooltip:{callbacks:{label:c=>c.label+': '+c.parsed+' %'}}}})});
+cargarInfo();
+</script>
+</body>
+</html>
