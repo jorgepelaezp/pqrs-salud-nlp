@@ -1,0 +1,8 @@
+,CV F1 macro,CV desv.,Test F1 macro,Test exactitud,Test recall Alta,Test precisión Alta,Tiempo ajuste (s)
+Baseline: clase mayoritaria,,,0.196,0.416,0.0,0.0,
+Baseline: palabras clave,,,0.349,0.43,0.655,0.398,
+Naive Bayes,0.834,0.016,0.838,0.841,0.832,0.832,0.041
+Random Forest,0.832,0.014,0.831,0.834,0.832,0.817,2.524
+SVM lineal,0.834,0.015,0.837,0.841,0.832,0.825,0.077
+SVD+LDA+GaussianNB,0.833,0.018,0.837,0.841,0.823,0.83,0.084
+SVD+LDA+Random Forest,0.829,0.013,0.829,0.832,0.832,0.81,0.856
