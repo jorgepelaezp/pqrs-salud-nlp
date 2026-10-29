@@ -1,7 +1,8 @@
-import os, time, joblib
+import os, sys, time, joblib
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from src.preprocesamiento import preprocesar
 
-ruta = "models/modelo_urgencia.joblib"
+ruta = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models", "modelo_urgencia.joblib")
 print("=== ARCHIVO DEL MODELO ===")
 print("Ruta:      ", os.path.abspath(ruta))
 print("Tamaño:    ", round(os.path.getsize(ruta) / 1024, 1), "KB")

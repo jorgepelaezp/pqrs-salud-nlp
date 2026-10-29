@@ -1,7 +1,8 @@
-import joblib
+import os, sys, joblib
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from src.preprocesamiento import preprocesar
 
-modelo = joblib.load("models/modelo_urgencia.joblib")
+modelo = joblib.load(os.path.join(os.path.dirname(os.path.abspath(__file__)), "models", "modelo_urgencia.joblib"))
 
 casos = [
     # (texto, urgencia esperada)

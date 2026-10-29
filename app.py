@@ -1,12 +1,15 @@
 """Panel web del modelo de urgencia de PQRS.
-Uso:  pip install flask  ->  python app.py  ->  abrir http://127.0.0.1:5000
-Ejecútalo desde la carpeta raíz del repositorio (donde están models/ y src/)."""
-import os, time
+Uso:  pip install -r requirements.txt  ->  python app.py  ->  abrir http://127.0.0.1:5000
+Puede ejecutarse desde cualquier carpeta: las rutas se construyen desde la raíz del repositorio."""
+import os, sys, time
 import joblib
 from flask import Flask, jsonify, render_template, request
-from src.preprocesamiento import preprocesar
 
-RUTA = os.path.join("models", "modelo_urgencia.joblib")
+RAIZ = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, RAIZ)
+from src.preprocesamiento import preprocesar  # noqa: E402
+
+RUTA = os.path.join(RAIZ, "models", "modelo_urgencia.joblib")
 modelo = joblib.load(RUTA)
 app = Flask(__name__)
 
@@ -36,14 +39,23 @@ def info():
 
 @app.route("/api/predecir", methods=["POST"])
 def predecir():
-    texto = (request.get_json(silent=True) or {}).get("texto", "").strip()
+    cuerpo = request.get_json(silent=True)
+    if not isinstance(cuerpo, dict):
+        return jsonify(error="El cuerpo debe ser un objeto JSON con el campo «texto»."), 400
+    texto = cuerpo.get("texto")
+    if not isinstance(texto, str):
+        return jsonify(error="El campo «texto» debe ser una cadena de caracteres."), 400
+    texto = texto.strip()
     if not texto:
         return jsonify(error="Escribe el texto de una PQRS."), 400
     limpio = preprocesar(texto)
+    if not limpio:
+        return jsonify(error="El texto no tiene contenido aprovechable: escribe palabras que describan la solicitud."), 400
     pred = str(modelo.predict([limpio])[0])
     probs = {}
     if hasattr(modelo, "predict_proba"):
-        probs = {str(c): float(p) for c, p in zip(modelo.classes_, modelo.predict_proba([limpio])[0])}
+        # Claves en minúscula para que coincidan con las de la interfaz (baja / media / alta)
+        probs = {str(c).lower(): float(p) for c, p in zip(modelo.classes_, modelo.predict_proba([limpio])[0])}
     return jsonify(procesado=limpio, urgencia=pred, probabilidades=probs)
 
 
