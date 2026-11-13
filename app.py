@@ -15,8 +15,8 @@ RUTA = os.path.join(RAIZ, "models", "modelo_urgencia.joblib")
 modelo = joblib.load(RUTA)
 app = Flask(__name__)
 
-from src.carga_api import registrar_carga
-registrar_carga(app)
+#from src.carga_api import registrar_carga
+#registrar_carga(app)
 
 from models_db import Session, Solicitante, Pqrs
 from correo import enviar_comprobante
