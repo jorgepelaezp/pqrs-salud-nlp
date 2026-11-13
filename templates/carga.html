@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Carga de datos · Clasificador de PQRS</title>
+    <style>
+      :root {
+        --bg: #f5f7fa;
+        --card: #fff;
+        --tx: #1b2430;
+        --mut: #64707f;
+        --bd: #dde3ea;
+        --pri: #0b6bcb;
+        --ok: #1a7f4b;
+        --warn: #a15c00;
+        --err: #b42318;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #12171d;
+          --card: #1a2129;
+          --tx: #e6ebf1;
+          --mut: #9aa6b4;
+          --bd: #2b3540;
+          --pri: #4da3ff;
+          --ok: #4cc38a;
+          --warn: #e0a040;
+          --err: #ff7b72;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font:
+          15px/1.5 system-ui,
+          sans-serif;
+        background: var(--bg);
+        color: var(--tx);
+      }
+      main {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 24px 16px 64px;
+      }
+      h1 {
+        font-size: 22px;
+        margin: 0 0 4px;
+      }
+      h2 {
+        font-size: 16px;
+        margin: 0 0 12px;
+      }
+      .sub {
+        color: var(--mut);
+        margin: 0 0 20px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--bd);
+        border-radius: 12px;
+        padding: 18px;
+        margin-bottom: 16px;
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 12px;
+      }
+      .stat b {
+        display: block;
+        font-size: 24px;
+      }
+      .stat span {
+        color: var(--mut);
+        font-size: 13px;
+      }
+      .tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+      .tab {
+        padding: 8px 14px;
+        border: 1px solid var(--bd);
+        border-radius: 8px;
+        background: var(--card);
+        color: var(--tx);
+        cursor: pointer;
+        font: inherit;
+      }
+      .tab[aria-selected="true"] {
+        background: var(--pri);
+        border-color: var(--pri);
+        color: #fff;
+      }
+      .drop {
+        border: 2px dashed var(--bd);
+        border-radius: 12px;
+        padding: 32px;
+        text-align: center;
+        color: var(--mut);
+        cursor: pointer;
+      }
+      .drop.over {
+        border-color: var(--pri);
+        color: var(--pri);
+      }
+      button.btn {
+        padding: 9px 16px;
+        border-radius: 8px;
+        border: 1px solid var(--pri);
+        background: var(--pri);
+        color: #fff;
+        font: inherit;
+        cursor: pointer;
+      }
+      button.btn.sec {
+        background: transparent;
+        color: var(--pri);
+      }
+      button.btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      label {
+        display: block;
+        font-weight: 600;
+        margin: 12px 0 4px;
+      }
+      textarea,
+      select,
+      input[type="text"],
+      input[type="password"] {
+        width: 100%;
+        padding: 9px;
+        border: 1px solid var(--bd);
+        border-radius: 8px;
+        background: var(--bg);
+        color: var(--tx);
+        font: inherit;
+      }
+      textarea {
+        min-height: 110px;
+        resize: vertical;
+      }
+      .row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+      .badge {
+        display: inline-block;
+        padding: 2px 9px;
+        border-radius: 99px;
+        border: 1px solid var(--bd);
+        font-size: 12px;
+        margin: 2px 4px 2px 0;
+      }
+      .ok {
+        color: var(--ok);
+      }
+      .warn {
+        color: var(--warn);
+      }
+      .err {
+        color: var(--err);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--bd);
+        vertical-align: top;
+      }
+      .scroll {
+        overflow-x: auto;
+        max-height: 260px;
+        overflow-y: auto;
+      }
+      ul.lista {
+        margin: 6px 0 0;
+        padding-left: 20px;
+      }
+      .hint {
+        color: var(--mut);
+        font-size: 13px;
+      }
+      .extra-row {
+        display: grid;
+        grid-template-columns: 1fr 2fr auto;
+        gap: 8px;
+        margin-top: 8px;
+      }
+      [hidden] {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Carga de datos para entrenar el modelo</h1>
+      <p class="sub">
+        Agregue nuevos registros de PQRS de forma masiva o uno por uno. Los
+        datos se validan antes de guardarse.
+      </p>
+
+      <div class="card stats" id="estado" aria-live="polite">
+        <div class="stat">
+          <b id="e-base">–</b><span>Registros del dataset base</span>
+        </div>
+        <div class="stat">
+          <b id="e-nuevos">–</b><span>Registros cargados por usuarios</span>
+        </div>
+        <div class="stat">
+          <b id="e-f1">–</b><span>F1 macro del último reentrenamiento</span>
+        </div>
+      </div>
+
+      {% if requiere_token %}
+      <div class="card">
+        <label for="token" style="margin-top: 0">Token de administrador</label>
+        <input type="password" id="token" autocomplete="off" />
+      </div>
+      {% endif %}
+
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" id="t-masiva" aria-selected="true">
+          Carga masiva
+        </button>
+        <button class="tab" role="tab" id="t-uno" aria-selected="false">
+          Registro por registro
+        </button>
+      </div>
+
+      <!-- ===== CARGA MASIVA ===== -->
+      <section id="p-masiva" class="card">
+        <h2>1. Suba su archivo</h2>
+        <div
+          class="drop"
+          id="drop"
+          tabindex="0"
+          role="button"
+          aria-label="Seleccionar archivo">
+          <strong>Arrastre aquí su archivo</strong> o haga clic para elegirlo<br />
+          <span class="hint"
+            >CSV, TSV, XLSX o JSON · hasta 50.000 filas (1.000, 2.000,
+            5.000…)</span
+          >
+          <input
+            type="file"
+            id="archivo"
+            accept=".csv,.tsv,.txt,.xlsx,.json"
+            hidden />
+        </div>
+        <p class="hint">
+          Columnas obligatorias: <b>texto</b> y <b>urgencia</b> (Riesgo Simple /
+          Riesgo Priorizado / Riesgo Vital). Si el archivo trae más columnas (8,
+          10 o las que sean) se aceptan y se conservan.
+          <a href="/api/carga/plantilla">Descargar plantilla</a>
+        </p>
+
+        <div id="reporte" hidden>
+          <h2 style="margin-top: 20px">2. Resultado de la validación</h2>
+          <div id="resumen" class="stats"></div>
+          <div id="avisos"></div>
+          <div id="errores-wrap" hidden>
+            <h2 style="margin-top: 16px">Filas descartadas</h2>
+            <div class="scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Fila</th>
+                    <th>Motivo</th>
+                  </tr>
+                </thead>
+                <tbody id="errores"></tbody>
+              </table>
+            </div>
+          </div>
+          <div id="previa-wrap" hidden>
+            <h2 style="margin-top: 16px">
+              Vista previa (primeras filas válidas)
+            </h2>
+            <div class="scroll"><table id="previa"></table></div>
+          </div>
+          <div class="row" id="acciones" hidden>
+            <button class="btn" id="confirmar">3. Confirmar y guardar</button>
+            <button class="btn sec" id="cancelar">Cancelar</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== REGISTRO POR REGISTRO ===== -->
+      <section id="p-uno" class="card" hidden>
+        <h2>Nuevo registro</h2>
+        <label for="r-texto">Texto de la PQRS</label>
+        <textarea
+          id="r-texto"
+          maxlength="5000"
+          placeholder="Describa la petición, queja, reclamo o sugerencia…"></textarea>
+        <label for="r-urg">Nivel de urgencia</label>
+        <select id="r-urg">
+          <option value="Riesgo Simple">Riesgo Simple (72 h)</option>
+          <option value="Riesgo Priorizado" selected>
+            Riesgo Priorizado (48 h)
+          </option>
+          <option value="Riesgo Vital">Riesgo Vital (24 h)</option>
+        </select>
+        <div id="extras"></div>
+        <div class="row">
+          <button class="btn sec" id="add-extra" type="button">
+            + Agregar campo adicional
+          </button>
+          <button class="btn" id="guardar-uno" type="button">
+            Validar y guardar
+          </button>
+        </div>
+        <p id="msg-uno" role="status"></p>
+      </section>
+
+      <!-- ===== REENTRENAR ===== -->
+      <section class="card">
+        <h2>Reentrenar el modelo</h2>
+        <p class="hint">
+          Usa el dataset base + los registros cargados. Se evalúa en un 20 %
+          reservado y se guarda una copia del modelo anterior en
+          <code>models/backups/</code>.
+        </p>
+        <div class="row">
+          <button class="btn" id="reentrenar">Reentrenar ahora</button>
+        </div>
+        <div id="res-train" style="margin-top: 12px" role="status"></div>
+      </section>
+    </main>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const esc = (s) =>
+        String(s ?? "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+      const num = (n) => Number(n).toLocaleString("es-CO");
+      let tokenLote = null,
+        nombreArchivo = "";
+
+      const headers = (json = true) => {
+        const h = json ? { "Content-Type": "application/json" } : {};
+        if ($("token")) h["X-Admin-Token"] = $("token").value;
+        return h;
+      };
+
+      async function cargarEstado() {
+        try {
+          const e = await (await fetch("/api/carga/estado")).json();
+          $("e-base").textContent = num(e.registros_base);
+          $("e-nuevos").textContent = num(e.registros_nuevos);
+          $("e-f1").textContent = e.ultimo_reentrenamiento
+            ? e.ultimo_reentrenamiento.f1_macro.toFixed(3).replace(".", ",")
+            : "–";
+        } catch (_) {}
+      }
+
+      // Pestañas
+      function tab(cual) {
+        $("p-masiva").hidden = cual !== "masiva";
+        $("p-uno").hidden = cual !== "uno";
+        $("t-masiva").setAttribute("aria-selected", cual === "masiva");
+        $("t-uno").setAttribute("aria-selected", cual === "uno");
+      }
+      $("t-masiva").onclick = () => tab("masiva");
+      $("t-uno").onclick = () => tab("uno");
+
+      // Carga masiva
+      const drop = $("drop");
+      drop.onclick = () => $("archivo").click();
+      drop.onkeydown = (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          $("archivo").click();
+        }
+      };
+      drop.ondragover = (e) => {
+        e.preventDefault();
+        drop.classList.add("over");
+      };
+      drop.ondragleave = () => drop.classList.remove("over");
+      drop.ondrop = (e) => {
+        e.preventDefault();
+        drop.classList.remove("over");
+        if (e.dataTransfer.files[0]) validar(e.dataTransfer.files[0]);
+      };
+      $("archivo").onchange = (e) => {
+        if (e.target.files[0]) validar(e.target.files[0]);
+        e.target.value = "";
+      };
+
+      function stat(valor, etiqueta, cls = "") {
+        return `<div class="stat"><b class="${cls}">${num(valor)}</b><span>${etiqueta}</span></div>`;
+      }
+
+      async function validar(file) {
+        nombreArchivo = file.name;
+        tokenLote = null;
+        const fd = new FormData();
+        fd.append("archivo", file);
+        $("reporte").hidden = false;
+        $("resumen").innerHTML = '<span class="hint">Validando…</span>';
+        ["avisos", "errores"].forEach((i) => ($(i).innerHTML = ""));
+        ["errores-wrap", "previa-wrap", "acciones"].forEach(
+          (i) => ($(i).hidden = true),
+        );
+        let r, d;
+        try {
+          r = await fetch("/api/carga/validar", { method: "POST", body: fd });
+          d = await r.json();
+        } catch (e) {
+          $("resumen").innerHTML =
+            '<span class="err">No se pudo contactar con el servidor.</span>';
+          return;
+        }
+        if (d.error) {
+          $("resumen").innerHTML = `<span class="err">${esc(d.error)}</span>`;
+          return;
+        }
+        pintarReporte(d);
+      }
+
+      function pintarReporte(d) {
+        $("resumen").innerHTML =
+          stat(d.total_filas, "Filas leídas") +
+          stat(d.validas, "Válidas", "ok") +
+          stat(d.invalidas, "Con errores", d.invalidas ? "err" : "") +
+          stat(
+            d.duplicadas_en_archivo + d.duplicadas_ya_existentes,
+            "Duplicadas",
+            "warn",
+          );
+        let h = "";
+        (d.errores_fatales || []).forEach(
+          (m) => (h += `<p class="err">✗ ${esc(m)}</p>`),
+        );
+        if (d.columnas_detectadas?.length)
+          h += `<p class="hint">Columnas detectadas: ${d.columnas_detectadas.map((c) => `<span class="badge">${esc(c)}</span>`).join("")}</p>`;
+        Object.entries(d.columnas_renombradas || {}).forEach(
+          ([a, b]) =>
+            (h += `<p class="hint">↪ «${esc(a)}» se reconoció como <b>${esc(b)}</b>.</p>`),
+        );
+        (d.columnas_extra || []).length &&
+          (h += `<p class="hint">Columnas adicionales aceptadas: ${d.columnas_extra.map((c) => `<span class="badge">${esc(c)}</span>`).join("")}</p>`);
+        (d.advertencias || []).forEach(
+          (m) => (h += `<p class="warn">⚠ ${esc(m)}</p>`),
+        );
+        if (
+          d.distribucion_urgencia &&
+          Object.keys(d.distribucion_urgencia).length
+        )
+          h += `<p class="hint">Distribución: ${Object.entries(
+            d.distribucion_urgencia,
+          )
+            .map(([k, v]) => `<span class="badge">${esc(k)}: ${num(v)}</span>`)
+            .join("")}</p>`;
+        $("avisos").innerHTML = h;
+
+        if (d.errores_filas?.length) {
+          $("errores").innerHTML = d.errores_filas
+            .map((e) => `<tr><td>${e.fila}</td><td>${esc(e.motivo)}</td></tr>`)
+            .join("");
+          $("errores-wrap").hidden = false;
+        }
+        if (d.ok && d.vista_previa?.length) {
+          const cols = Object.keys(d.vista_previa[0]);
+          $("previa").innerHTML =
+            "<thead><tr>" +
+            cols.map((c) => `<th>${esc(c)}</th>`).join("") +
+            "</tr></thead><tbody>" +
+            d.vista_previa
+              .map(
+                (f) =>
+                  "<tr>" +
+                  cols
+                    .map((c) => `<td>${esc(String(f[c]).slice(0, 140))}</td>`)
+                    .join("") +
+                  "</tr>",
+              )
+              .join("") +
+            "</tbody>";
+          $("previa-wrap").hidden = false;
+          tokenLote = d.token;
+          $("acciones").hidden = false;
+        }
+      }
+
+      $("confirmar").onclick = async () => {
+        if (!tokenLote) return;
+        $("confirmar").disabled = true;
+        const r = await fetch("/api/carga/confirmar", {
+          method: "POST",
+          headers: headers(),
+          body: JSON.stringify({ token: tokenLote, archivo: nombreArchivo }),
+        });
+        const d = await r.json();
+        $("confirmar").disabled = false;
+        if (d.error) {
+          $("avisos").innerHTML += `<p class="err">✗ ${esc(d.error)}</p>`;
+          return;
+        }
+        $("acciones").hidden = true;
+        tokenLote = null;
+        $("avisos").innerHTML +=
+          `<p class="ok">✓ Se guardaron ${num(d.guardados)} registros (lote ${esc(d.lote_id)}). Ya puede reentrenar el modelo.</p>`;
+        cargarEstado();
+      };
+      $("cancelar").onclick = () => {
+        tokenLote = null;
+        $("reporte").hidden = true;
+      };
+
+      // Registro por registro
+      $("add-extra").onclick = () => {
+        const d = document.createElement("div");
+        d.className = "extra-row";
+        d.innerHTML =
+          '<input type="text" placeholder="Nombre del campo (p. ej. eps)" aria-label="Nombre del campo"><input type="text" placeholder="Valor" aria-label="Valor"><button class="btn sec" type="button" aria-label="Quitar">✕</button>';
+        d.querySelector("button").onclick = () => d.remove();
+        $("extras").appendChild(d);
+      };
+      $("guardar-uno").onclick = async () => {
+        const body = { texto: $("r-texto").value, urgencia: $("r-urg").value };
+        document.querySelectorAll("#extras .extra-row").forEach((f) => {
+          const [k, v] = f.querySelectorAll("input");
+          if (k.value.trim()) body[k.value.trim()] = v.value;
+        });
+        const r = await fetch("/api/carga/registro", {
+          method: "POST",
+          headers: headers(),
+          body: JSON.stringify(body),
+        });
+        const d = await r.json();
+        if (d.error) {
+          $("msg-uno").innerHTML = `<span class="err">✗ ${esc(d.error)}</span>`;
+          return;
+        }
+        $("msg-uno").innerHTML = '<span class="ok">✓ Registro guardado.</span>';
+        $("r-texto").value = "";
+        $("extras").innerHTML = "";
+        cargarEstado();
+      };
+
+      // Reentrenar
+      $("reentrenar").onclick = async () => {
+        $("reentrenar").disabled = true;
+        $("res-train").textContent = "Entrenando…";
+        try {
+          const r = await fetch("/api/carga/reentrenar", {
+            method: "POST",
+            headers: headers(),
+          });
+          const d = await r.json();
+          if (d.error) {
+            $("res-train").innerHTML =
+              `<span class="err">✗ ${esc(d.error)}</span>`;
+          } else {
+            $("res-train").innerHTML =
+              `<p class="ok">✓ Modelo actualizado con ${num(d.registros_entrenamiento)} registros.</p>
+        <p>F1 macro (prueba, n = ${num(d.registros_prueba)}): <b>${d.f1_macro.toFixed(3).replace(".", ",")}</b></p>
+        <p>Recall por clase: ${Object.entries(d.recall_por_clase)
+          .map(
+            ([k, v]) =>
+              `<span class="badge">${esc(k)}: ${v.toFixed(3).replace(".", ",")}</span>`,
+          )
+          .join("")}</p>`;
+            cargarEstado();
+          }
+        } catch (e) {
+          $("res-train").innerHTML =
+            '<span class="err">No se pudo contactar con el servidor.</span>';
+        }
+        $("reentrenar").disabled = false;
+      };
+
+      cargarEstado();
+    </script>
+  </body>
+</html>

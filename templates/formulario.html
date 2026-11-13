@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Radicar PQRS</title>
+    <style>
+      body {
+        margin: 0;
+        background: #f0ebf8;
+        font-family: Roboto, Arial, sans-serif;
+        color: #202124;
+      }
+      .wrap {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 16px;
+      }
+      .card {
+        background: #fff;
+        border: 1px solid #dadce0;
+        border-radius: 8px;
+        padding: 24px;
+        margin-bottom: 12px;
+      }
+      .head {
+        border-top: 10px solid #673ab7;
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 28px;
+        font-weight: 400;
+      }
+      label {
+        display: block;
+        font-size: 16px;
+        margin-bottom: 10px;
+      }
+      .req {
+        color: #d93025;
+      }
+      input[type="text"],
+      input[type="email"],
+      select,
+      textarea {
+        width: 100%;
+        box-sizing: border-box;
+        font-size: 15px;
+        padding: 8px 4px;
+        border: none;
+        border-bottom: 1px solid #dadce0;
+        background: #fff;
+        outline: none;
+        font-family: inherit;
+      }
+      select {
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        padding: 10px;
+      }
+      textarea {
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        padding: 10px;
+        min-height: 120px;
+        resize: vertical;
+      }
+      input:focus,
+      select:focus,
+      textarea:focus {
+        border-color: #673ab7;
+      }
+      button {
+        background: #673ab7;
+        color: #fff;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 4px;
+        font-size: 15px;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.6;
+        cursor: default;
+      }
+      .check {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        font-size: 14px;
+      }
+      #msg {
+        padding: 16px;
+        border-radius: 8px;
+        display: none;
+        margin-bottom: 12px;
+      }
+      .ok {
+        background: #e6f4ea;
+        border: 1px solid #34a853;
+      }
+      .err {
+        background: #fce8e6;
+        border: 1px solid #d93025;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card head">
+        <h1>Radicación de PQRS en salud</h1>
+        <div>
+          Peticiones, quejas, reclamos y sugerencias.
+          <span class="req">* Obligatorio</span>
+        </div>
+      </div>
+
+      <div id="msg"></div>
+
+      <form id="f">
+        <div class="card">
+          <label>Nombre completo</label>
+          <input type="text" name="nombre" maxlength="120" />
+        </div>
+
+        <div class="card">
+          <label>Correo electrónico <span class="req">*</span></label>
+          <input type="email" name="correo" required />
+        </div>
+
+        <div class="card">
+          <label>Entidad (EPS) <span class="req">*</span></label>
+          <select name="entidad" required></select>
+        </div>
+
+        <div class="card">
+          <label>Ciudad <span class="req">*</span></label>
+          <select name="ciudad" required></select>
+        </div>
+
+        <div class="card">
+          <label>Régimen <span class="req">*</span></label>
+          <select name="regimen" required></select>
+        </div>
+
+        <div class="card">
+          <label>Tipo de solicitud <span class="req">*</span></label>
+          <select name="tipo" required></select>
+        </div>
+
+        <div class="card">
+          <label>Tema <span class="req">*</span></label>
+          <select name="tema" required></select>
+        </div>
+
+        <div class="card">
+          <label>Describe tu solicitud <span class="req">*</span></label>
+          <textarea name="texto" required minlength="10"></textarea>
+        </div>
+
+        <div class="card check">
+          <input type="checkbox" id="acepta" required />
+          <label for="acepta" style="margin: 0"
+            >Autorizo el tratamiento de mis datos personales conforme a la Ley
+            1581 de 2012. <span class="req">*</span></label
+          >
+        </div>
+
+        <button id="btn" type="submit">Enviar</button>
+      </form>
+    </div>
+
+    <script>
+      const f = document.getElementById("f");
+      const msg = document.getElementById("msg");
+      const btn = document.getElementById("btn");
+
+      fetch("/api/catalogos")
+        .then((r) => r.json())
+        .then((cat) => {
+          for (const [campo, valores] of Object.entries(cat)) {
+            const sel = f.elements[campo];
+            sel.innerHTML =
+              '<option value="">Elige una opción</option>' +
+              valores.map((v) => `<option value="${v}">${v}</option>`).join("");
+          }
+        });
+
+      f.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        btn.disabled = true;
+        const datos = Object.fromEntries(new FormData(f));
+        datos.acepta_datos = document.getElementById("acepta").checked;
+        try {
+          const r = await fetch("/api/radicar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(datos),
+          });
+          const j = await r.json();
+          msg.style.display = "block";
+          if (r.ok) {
+            msg.className = "ok";
+            msg.innerHTML =
+              `Tu PQRS fue radicada. Radicado: <b>${j.radicado}</b>.` +
+              (j.correo_enviado
+                ? " Te enviamos el comprobante a tu correo."
+                : " No pudimos enviar el correo, guarda tu número de radicado.");
+            f.reset();
+          } else {
+            msg.className = "err";
+            msg.textContent = j.error || "Ocurrió un error.";
+          }
+        } catch (err) {
+          msg.style.display = "block";
+          msg.className = "err";
+          msg.textContent = "No se pudo conectar con el servidor.";
+        }
+        btn.disabled = false;
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    </script>
+  </body>
+</html>

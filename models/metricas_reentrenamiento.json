@@ -1,0 +1,16 @@
+{
+  "fecha": "2026-11-13T10:00:18",
+  "registros_entrenamiento": 3161,
+  "registros_prueba": 641,
+  "f1_macro": 0.8173,
+  "recall_por_clase": {
+    "Alta": 0.808,
+    "Baja": 0.8674,
+    "Media": 0.7778
+  },
+  "distribucion": {
+    "Baja": 1321,
+    "Media": 1233,
+    "Alta": 607
+  }
+}
