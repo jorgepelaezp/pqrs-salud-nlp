@@ -214,6 +214,7 @@ body{font-family:'DM Sans','Segoe UI',Arial,sans-serif;background:radial-gradien
   </head>
   <body>
     <main>
+      <div class="row" style="margin:0 0 18px"><a class="btn sec" href="/admin" style="display:inline-flex;text-decoration:none;align-items:center">← Volver al panel administrativo</a></div>
       <h1>Carga de datos para entrenar el modelo</h1>
       <p class="sub">
         Agregue nuevos registros de PQRS de forma masiva o uno por uno. Los
@@ -308,7 +309,7 @@ body{font-family:'DM Sans','Segoe UI',Arial,sans-serif;background:radial-gradien
 
       <!-- ===== REGISTRO POR REGISTRO ===== -->
       <section id="p-uno" class="card" hidden>
-        <h2>Nuevo registro</h2>
+        <h2>Nuevo registro etiquetado</h2><p class="hint">Aquí usted indica la etiqueta del registro para entrenamiento. No es una predicción automática del modelo.</p>
         <label for="r-texto">Texto de la PQRS</label>
         <textarea
           id="r-texto"
@@ -351,6 +352,8 @@ body{font-family:'DM Sans','Segoe UI',Arial,sans-serif;background:radial-gradien
 
     <script>
       const $ = (id) => document.getElementById(id);
+      const RIESGOS = {Alta:"Riesgo vital", Media:"Riesgo priorizado", Baja:"Riesgo simple"};
+      const riesgoVisible = (u) => RIESGOS[String(u || "").trim()] || u || "Sin clasificar";
       const esc = (s) =>
         String(s ?? "").replace(
           /[&<>"']/g,
@@ -478,10 +481,10 @@ body{font-family:'DM Sans','Segoe UI',Arial,sans-serif;background:radial-gradien
           d.distribucion_urgencia &&
           Object.keys(d.distribucion_urgencia).length
         )
-          h += `<p class="hint">Distribución: ${Object.entries(
+          h += `<p class="hint">Distribución por riesgo: ${Object.entries(
             d.distribucion_urgencia,
           )
-            .map(([k, v]) => `<span class="badge">${esc(k)}: ${num(v)}</span>`)
+            .map(([k, v]) => `<span class="badge">${esc(riesgoVisible(k))}: ${num(v)}</span>`)
             .join("")}</p>`;
         $("avisos").innerHTML = h;
 
@@ -564,7 +567,7 @@ body{font-family:'DM Sans','Segoe UI',Arial,sans-serif;background:radial-gradien
           $("msg-uno").innerHTML = `<span class="err">✗ ${esc(d.error)}</span>`;
           return;
         }
-        $("msg-uno").innerHTML = '<span class="ok">✓ Registro guardado.</span>';
+        $("msg-uno").innerHTML = '<span class="ok">✓ Registro guardado con la categoría indicada.</span>';
         $("r-texto").value = "";
         $("extras").innerHTML = "";
         cargarEstado();
@@ -590,7 +593,7 @@ body{font-family:'DM Sans','Segoe UI',Arial,sans-serif;background:radial-gradien
         <p>Recall por clase: ${Object.entries(d.recall_por_clase)
           .map(
             ([k, v]) =>
-              `<span class="badge">${esc(k)}: ${v.toFixed(3).replace(".", ",")}</span>`,
+              `<span class="badge">${esc(riesgoVisible(k))}: ${v.toFixed(3).replace(".", ",")}</span>`,
           )
           .join("")}</p>`;
             cargarEstado();
