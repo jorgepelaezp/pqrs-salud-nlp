@@ -623,10 +623,10 @@ async function cargarFilas() {
           h("div",{className:"sub",textContent:p.tipo || ""})
         ),
         h("td",{},
-          badgeUrg(p.urgencia),
+          badgeUrg(p.urgencia_final || p.urgencia),
           h("div",{
             className:"sub",
-            textContent:p.prob == null
+            textContent:p.corregida ? "Corregido por administrador" : p.prob == null
               ? ""
               : (p.prob*100).toFixed(0)+" % confianza"
           })
@@ -670,7 +670,7 @@ function abrir(p) {
   });
 
   const tags=h("div",{className:"tags"},
-    badgeUrg(p.urgencia),
+    badgeUrg(p.urgencia_final || p.urgencia),
     badgeEst(p.estado)
   );
 
@@ -724,8 +724,51 @@ function abrir(p) {
       })
     ),
     h("p",{className:"sub",textContent:
-      "Clasificación preliminar automatizada, sujeta a revisión humana."
+      "Predicción original del modelo, conservada para auditoría."
     })
+  );
+
+  const riesgoActual = p.urgencia_final || p.urgencia;
+  const selRiesgo = h("select");
+  ["Alta","Media","Baja"].forEach(u => selRiesgo.append(
+    h("option",{value:u,textContent:riesgoVisible(u),selected:u===riesgoActual})
+  ));
+  const motivoRiesgo = h("textarea",{
+    placeholder:"Justifica por qué cambias el nivel de riesgo (mínimo 10 caracteres)...",
+    maxLength:1000
+  });
+  const btnRiesgo = h("button",{className:"btn pri",textContent:"Guardar corrección de riesgo"});
+  const infoRiesgo = h("p",{className:"sub",textContent:p.corregida
+    ? "Clasificación revisada por el administrador. Motivo: "+(p.motivo_correccion || "No disponible")
+    : "La clasificación del modelo permanece guardada. Esta revisión no reentrena automáticamente la IA."});
+  btnRiesgo.onclick = async () => {
+    if(selRiesgo.value===riesgoActual){toast("Selecciona un riesgo diferente.","warn");return;}
+    if(motivoRiesgo.value.trim().length<10){toast("Explica el motivo con al menos 10 caracteres.","warn");return;}
+    btnRiesgo.disabled=true;
+    try {
+      const r=await api(`/api/admin/pqrs/${p.id}/riesgo`,{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({urgencia:selRiesgo.value,motivo:motivoRiesgo.value.trim()})
+      });
+      p.urgencia_final=r.urgencia_final;
+      p.corregida=r.corregida;
+      p.motivo_correccion=r.motivo_correccion;
+      tags.replaceChildren(badgeUrg(p.urgencia_final),badgeEst(p.estado));
+      infoRiesgo.textContent="Corrección guardada: "+riesgoVisible(p.urgencia_final)+". "+p.motivo_correccion;
+      motivoRiesgo.value="";
+      toast("Nivel de riesgo corregido correctamente.");
+      await Promise.all([cargarFilas(),cargarResumen()]);
+    }catch(e){toast(e.message || "No se pudo corregir el riesgo.","err");}
+    finally{btnRiesgo.disabled=false;}
+  };
+  const correccion = h("div",{className:"sec"},
+    h("h4",{textContent:"Revisión humana del nivel de riesgo"}),
+    h("div",{className:"manage"},
+      h("label",{className:"l",textContent:"Riesgo final para la gestión"}),
+      selRiesgo,
+      h("label",{className:"l",textContent:"Justificación obligatoria"}),
+      motivoRiesgo,btnRiesgo,infoRiesgo
+    )
   );
 
   const sel=h("select");
@@ -791,7 +834,7 @@ function abrir(p) {
       }
 
       tags.replaceChildren(
-        badgeUrg(p.urgencia),
+        badgeUrg(p.urgencia_final || p.urgencia),
         badgeEst(p.estado)
       );
 
@@ -816,7 +859,7 @@ function abrir(p) {
       h("label",{className:"chk"},
         chk,
         h("div",{},
-          "Notificar al solicitante por correo",
+          "Notificar al solicitante por correo (incluye el riesgo actual)",
           h("small",{
             textContent:p.correo
               ? "Se enviará a "+p.correo
@@ -835,6 +878,7 @@ function abrir(p) {
       informacion,
       texto,
       modelo,
+      correccion,
       gestion
     )
   );

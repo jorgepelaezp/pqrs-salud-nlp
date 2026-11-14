@@ -88,7 +88,7 @@ EXPLICACION = {
 # GENERAR CORREO HTML
 # ============================================================
 
-def _html(nombre, radicado, entidad, anterior, nuevo, nota) -> str:
+def _html(nombre, radicado, entidad, anterior, nuevo, nota, urgencia_original=None, urgencia_final=None) -> str:
 
     e = html.escape
     color = COLORES.get(nuevo, "#4f46e5")
@@ -129,6 +129,19 @@ def _html(nombre, radicado, entidad, anterior, nuevo, nota) -> str:
             </td>
         </tr>
         """
+
+    riesgos = {"Alta": "Riesgo vital", "Media": "Riesgo priorizado", "Baja": "Riesgo simple"}
+    bloque_riesgo = ""
+    if urgencia_final:
+        original_txt = riesgos.get(urgencia_original, urgencia_original or "Sin clasificar")
+        final_txt = riesgos.get(urgencia_final, urgencia_final)
+        aviso = ("La clasificación fue corregida después de una revisión administrativa."
+                 if urgencia_original != urgencia_final else
+                 "Esta es la clasificación actual de tu solicitud.")
+        bloque_riesgo = f"""<tr><td style="padding:0 32px 24px"><div style="background:#eef2ff;border-radius:10px;padding:18px;color:#17233c">
+          <strong>Clasificación de riesgo</strong><p>Clasificación inicial: {e(original_txt)}</p>
+          <p><strong>Clasificación actual: {e(final_txt)}</strong></p>
+          <p>{e(aviso)}</p></div></td></tr>"""
 
     return f"""<!doctype html>
 <html lang="es">
@@ -316,6 +329,7 @@ style="
         </td>
     </tr>
 
+    {bloque_riesgo}
     {bloque_nota}
 
     <tr>
@@ -348,7 +362,7 @@ style="
 # GENERAR CORREO DE TEXTO PLANO
 # ============================================================
 
-def _texto(nombre, radicado, entidad, anterior, nuevo, nota) -> str:
+def _texto(nombre, radicado, entidad, anterior, nuevo, nota, urgencia_original=None, urgencia_final=None) -> str:
 
     partes = [
         f"Hola{', ' + nombre if nombre else ''}.",
@@ -362,6 +376,10 @@ def _texto(nombre, radicado, entidad, anterior, nuevo, nota) -> str:
         EXPLICACION.get(nuevo, ""),
     ]
 
+    if urgencia_final:
+        riesgos = {"Alta": "Riesgo vital", "Media": "Riesgo priorizado", "Baja": "Riesgo simple"}
+        partes += ["", "Clasificación inicial: " + riesgos.get(urgencia_original, urgencia_original or "Sin clasificar"),
+                   "Clasificación actual: " + riesgos.get(urgencia_final, urgencia_final)]
     if nota:
         partes += [
             "",
@@ -388,7 +406,9 @@ def enviar_cambio_estado(
     entidad,
     anterior,
     nuevo,
-    nota=""
+    nota="",
+    urgencia_original=None,
+    urgencia_final=None,
 ) -> bool:
 
     """Envía el correo de actualización de estado de una PQRS.
@@ -423,12 +443,12 @@ def enviar_cambio_estado(
 
     # Agregar versión de texto
     msg.set_content(
-        _texto(nombre, radicado, entidad, anterior, nuevo, nota)
+        _texto(nombre, radicado, entidad, anterior, nuevo, nota, urgencia_original, urgencia_final)
     )
 
     # Agregar versión HTML
     msg.add_alternative(
-        _html(nombre, radicado, entidad, anterior, nuevo, nota),
+        _html(nombre, radicado, entidad, anterior, nuevo, nota, urgencia_original, urgencia_final),
         subtype="html"
     )
 
