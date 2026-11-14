@@ -1,174 +1,291 @@
 # Clasificación y priorización automática de PQRS en salud mediante PLN
 
 **Proyecto de Aula — Inteligencia Artificial**  
-Ingeniería de Sistemas · 7.º semestre  
-Grupo 02 · Docente: Lic. Tonny Jiménez  
-Valledupar, Colombia · 2026
+**Programa:** Ingeniería de Sistemas — 7.º semestre  
+**Grupo:** 02  
+**Docente:** Lic. Tonny Jiménez  
+**Ubicación:** Valledupar, Colombia  
+**Año:** 2026
 
-## Descripción del proyecto
+---
 
-Este proyecto desarrolla un sistema de clasificación y priorización automática de **Peticiones, Quejas, Reclamos y Sugerencias (PQRS)** del sector salud mediante técnicas de **Procesamiento del Lenguaje Natural (PLN)** y aprendizaje automático.
+## 1. Descripción del proyecto
 
-Su propósito es apoyar la identificación de solicitudes que requieren mayor atención, clasificando su nivel de urgencia en tres categorías:
+Este proyecto consiste en el desarrollo de un sistema inteligente para la **clasificación y priorización automática de Peticiones, Quejas, Reclamos y Sugerencias (PQRS) en el sector salud colombiano**, utilizando técnicas de Procesamiento del Lenguaje Natural (PLN) y aprendizaje automático.
 
-- **Alta:** situaciones que pueden representar un riesgo importante para la salud o requieren atención prioritaria.
-- **Media:** solicitudes que necesitan seguimiento o resolución, sin evidenciar necesariamente una emergencia inmediata.
-- **Baja:** consultas, trámites y solicitudes de menor prioridad.
+El objetivo es apoyar la identificación de reclamos relacionados con barreras de acceso a los servicios de salud, teniendo en cuenta el nivel de riesgo que puede representar la situación descrita por el usuario.
 
-La solución integra un modelo de clasificación basado en **TF-IDF y Multinomial Naive Bayes**, una aplicación web pública, un panel administrativo, una base de datos SQLite y un módulo de carga masiva de información.
+El proyecto toma como referencia la **Circular Externa 2023151000000010-5 de 2023 de la Superintendencia Nacional de Salud**, que establece criterios para la clasificación de reclamos en salud según el riesgo y los términos máximos de resolución correspondientes.
 
-El proyecto constituye un **prototipo académico y una prueba de concepto**. Los datos empleados para el desarrollo y las evaluaciones documentadas son sintéticos y no corresponden a historias clínicas ni a PQRS reales de pacientes.
+La solución integra un modelo de clasificación basado en **TF-IDF y Multinomial Naive Bayes**, una aplicación web pública, un panel administrativo, almacenamiento mediante SQLite, notificaciones por correo electrónico y un módulo de carga masiva de datos.
 
-## Estado del proyecto
+El sistema constituye un prototipo académico desarrollado con datos sintéticos. No reemplaza la valoración humana, la atención médica ni los procedimientos oficiales de las entidades de salud.
 
-**Fase 3 — Prototipo funcional integrado**
+---
 
-| Fase | Contenido | Estado |
+## 2. Problemática
+
+En Colombia, las entidades del sector salud reciben solicitudes relacionadas con demoras en citas médicas, falta de medicamentos, negación de procedimientos, problemas de autorizaciones y dificultades en la prestación de servicios.
+
+Estas situaciones pueden representar distintos niveles de riesgo para los pacientes.
+
+Una demora en una consulta administrativa no necesariamente tiene las mismas consecuencias que la interrupción de un tratamiento indispensable o la falta de atención ante una situación que compromete la vida.
+
+Por esta razón, resulta importante contar con mecanismos que permitan identificar y priorizar oportunamente los reclamos de mayor riesgo.
+
+El procesamiento manual de grandes volúmenes de solicitudes puede dificultar esta tarea, especialmente cuando la información se presenta mediante descripciones escritas en lenguaje natural.
+
+El proyecto propone utilizar inteligencia artificial para analizar automáticamente estos textos y generar una clasificación inicial que sirva como apoyo para la gestión de las PQRS.
+
+---
+
+## 3. Fundamentación normativa colombiana
+
+### Circular Externa 2023151000000010-5 de 2023
+
+La Superintendencia Nacional de Salud establece una clasificación de los reclamos en salud de acuerdo con el riesgo asociado a la situación presentada.
+
+Para los reclamos sujetos a esta clasificación se contemplan tres categorías:
+
+| Clasificación | Descripción | Plazo máximo de resolución |
 |---|---|---|
-| Fase 1 | Planteamiento del problema, generación de datos y análisis exploratorio | Completada |
-| Fase 2 | Preprocesamiento, representación TF-IDF, entrenamiento, comparación y evaluación de modelos | Completada |
-| Fase 3 | Integración web, gestión administrativa, almacenamiento, notificaciones y carga masiva | Implementada |
+| **Riesgo Vital** | Situaciones que representan un riesgo inminente para la vida o integridad del usuario y requieren atención inmediata. | **24 horas** |
+| **Riesgo Priorizado** | Situaciones que comprometen la integridad o afectan especialmente a poblaciones vulnerables, entre otros supuestos definidos por la regulación. | **48 horas** |
+| **Riesgo Simple** | Manifestaciones de insatisfacción relacionadas con la prestación del servicio que no reúnen los criterios de riesgo vital o priorizado. | **72 horas** |
 
-El sistema dispone de una interfaz pública para registrar PQRS y de una interfaz administrativa para consultar, clasificar y gestionar solicitudes.
+Los plazos representan límites máximos de resolución para los reclamos comprendidos en estas categorías. No deben interpretarse como una autorización para retrasar la atención cuando la situación requiere una intervención inmediata.
 
-## Objetivos
+**Importante:** estos términos no se aplican indistintamente a todas las peticiones, solicitudes de información o trámites administrativos. Su aplicación depende de la naturaleza del reclamo y del marco normativo correspondiente.
+
+### Relación con el modelo de inteligencia artificial
+
+El modelo desarrollado utiliza internamente las etiquetas:
+
+- `Alta`
+- `Media`
+- `Baja`
+
+Estas etiquetas se interpretan en el prototipo mediante la siguiente correspondencia:
+
+| Etiqueta del modelo | Categoría de referencia | Plazo normativo |
+|---|---|---|
+| Alta | Riesgo Vital | 24 horas |
+| Media | Riesgo Priorizado | 48 horas |
+| Baja | Riesgo Simple | 72 horas |
+
+Esta correspondencia permite relacionar las predicciones del clasificador con los niveles de riesgo utilizados como referencia normativa.
+
+Sin embargo, **la correspondencia entre etiquetas no demuestra por sí sola que el modelo cumpla todos los criterios jurídicos de clasificación**. Para ello sería necesario verificar que los datos, las reglas de etiquetado y los procedimientos de gestión reflejen correctamente los supuestos establecidos por la regulación.
+
+El sistema proporciona una estimación automática que debe estar sujeta a revisión humana, especialmente en situaciones de riesgo vital.
+
+### Referencia normativa
+
+Superintendencia Nacional de Salud. (2023). *Circular Externa 2023151000000010-5 de 2023*.
+
+Documento oficial:
+
+https://docs.supersalud.gov.co/PortalWeb/Juridica/CircularesExterna/Circular%20Externa%20No.%202023151000000010-5%20de%202023.pdf
+
+---
+
+## 4. Objetivos
 
 ### Objetivo general
 
-Desarrollar un prototipo basado en procesamiento del lenguaje natural y aprendizaje automático que permita clasificar y priorizar automáticamente las PQRS del sector salud según su nivel de urgencia.
+Desarrollar un prototipo de inteligencia artificial basado en procesamiento del lenguaje natural que permita clasificar y priorizar automáticamente las PQRS del sector salud colombiano, tomando como referencia los niveles de riesgo establecidos por la Superintendencia Nacional de Salud.
 
 ### Objetivos específicos
 
-1. Construir un conjunto de datos sintéticos representativo de diferentes situaciones relacionadas con los servicios de salud.
-2. Aplicar técnicas de limpieza, normalización y procesamiento de texto.
-3. Entrenar y comparar algoritmos de clasificación supervisada.
-4. Evaluar el desempeño mediante métricas como precisión, recall y F1 macro.
-5. Integrar el modelo seleccionado en una aplicación web funcional.
-6. Implementar herramientas de seguimiento administrativo y carga masiva de información.
-7. Analizar las limitaciones y posibles mejoras del sistema.
+1. Analizar la problemática relacionada con la clasificación y priorización de reclamos en el sector salud.
+2. Construir un conjunto de datos sintéticos que represente diferentes situaciones relacionadas con la prestación de servicios de salud.
+3. Implementar técnicas de limpieza, normalización y procesamiento del lenguaje natural.
+4. Entrenar y comparar modelos supervisados para la clasificación de urgencia.
+5. Evaluar el desempeño mediante métricas como precisión, recall y F1 macro.
+6. Integrar el modelo seleccionado en una aplicación web funcional.
+7. Implementar herramientas de registro, seguimiento y gestión administrativa de PQRS.
+8. Desarrollar un módulo de carga masiva que facilite incorporar nuevos datos y realizar evaluaciones posteriores.
 
-## Tecnologías utilizadas
+---
+
+## 5. Estado del proyecto
+
+**Estado actual: Fase 3 — Prototipo funcional integrado**
+
+| Fase | Actividades principales | Estado |
+|---|---|---|
+| **Fase 1** | Planteamiento del problema, revisión normativa, generación de datos y análisis exploratorio | Completada |
+| **Fase 2** | Preprocesamiento, entrenamiento, comparación de algoritmos y evaluación | Completada |
+| **Fase 3** | Integración web, panel administrativo, almacenamiento, notificaciones y carga masiva | Implementada |
+
+Las tres fases conforman una prueba de concepto que integra la experimentación con inteligencia artificial y el desarrollo de software.
+
+---
+
+## 6. Tecnologías utilizadas
 
 | Tecnología | Función |
 |---|---|
-| Python | Lenguaje principal |
-| Flask | Desarrollo de las aplicaciones web y API |
-| scikit-learn | Entrenamiento y evaluación de modelos |
+| Python | Lenguaje principal del proyecto |
+| Flask | Desarrollo de las aplicaciones web y sus API |
+| scikit-learn | Entrenamiento y evaluación de clasificadores |
 | NLTK | Procesamiento del lenguaje natural |
-| TF-IDF | Representación numérica de textos |
-| Multinomial Naive Bayes | Clasificación automática de urgencia |
-| SQLite | Almacenamiento de solicitudes |
+| TF-IDF | Vectorización de textos |
+| Multinomial Naive Bayes | Modelo seleccionado para clasificación |
+| Pandas | Procesamiento y análisis de datos |
+| NumPy | Operaciones numéricas |
+| SQLite | Almacenamiento de PQRS |
 | SQLAlchemy | Interacción con la base de datos |
-| Pandas | Manipulación y procesamiento de datos |
-| Joblib | Serialización y carga del modelo |
-| HTML, CSS y JavaScript | Interfaces de usuario |
-| Jupyter Notebook | Experimentación y análisis |
+| Joblib | Serialización del modelo |
+| HTML | Estructura de las interfaces |
+| CSS | Diseño visual |
+| JavaScript | Interacción dinámica con las API |
+| Jupyter Notebook | Experimentación y análisis de resultados |
 
-## Metodología
+---
 
-### Fase 1 — Planteamiento y preparación de los datos
+## 7. Metodología de desarrollo
 
-Se identificó la necesidad de apoyar la clasificación de PQRS en instituciones del sector salud, donde el volumen de solicitudes puede dificultar la identificación oportuna de situaciones prioritarias.
+### Fase 1 — Planteamiento, datos y análisis exploratorio
 
-Para desarrollar el prototipo se construyó inicialmente un conjunto de **3.000 registros sintéticos**, generado con semilla 42 para favorecer la reproducibilidad.
+Se identificó la necesidad de mejorar los procesos de clasificación de reclamos en el sector salud, considerando las diferencias entre situaciones administrativas y casos que pueden representar riesgos importantes para los pacientes.
 
-Los registros incluyen textos relacionados con solicitudes de medicamentos, citas médicas, autorizaciones, atención administrativa y otros servicios de salud.
+Se construyó un conjunto inicial de **3.000 registros sintéticos**, generado con semilla 42 para favorecer la reproducibilidad.
 
-Se realizó un análisis exploratorio para estudiar la distribución de categorías, revisar los textos e identificar posibles problemas en los datos.
+Los ejemplos representan situaciones relacionadas con:
 
-### Fase 2 — Preprocesamiento y modelado
+- Medicamentos y tratamientos.
+- Citas médicas.
+- Autorizaciones de procedimientos.
+- Atención de urgencias.
+- Demoras en la prestación de servicios.
+- Trámites y solicitudes administrativas.
 
-El procesamiento de los textos contempla operaciones de normalización y limpieza, incluyendo tratamiento de caracteres, palabras frecuentes y conservación de información relevante para la clasificación.
+Los registros contienen textos descriptivos y etiquetas de clasificación.
 
-La representación numérica utiliza **TF-IDF (Term Frequency–Inverse Document Frequency)**.
+Posteriormente se realizó un análisis exploratorio para revisar la distribución de los datos, identificar patrones y preparar la información para el entrenamiento.
 
-Esta técnica asigna pesos a los términos de acuerdo con su frecuencia en un documento y su relevancia respecto al conjunto de documentos.
+### Fase 2 — Procesamiento del lenguaje natural y modelado
 
-Se compararon diferentes estrategias de clasificación, incluyendo:
+#### Preprocesamiento
 
-- Clasificador de clase mayoritaria.
-- Clasificador basado en palabras clave.
-- Multinomial Naive Bayes con TF-IDF.
-- SVM lineal con TF-IDF.
-- Random Forest con TF-IDF.
-- Combinaciones de reducción de dimensionalidad, LDA y clasificadores supervisados.
+El texto de cada PQRS se transforma mediante procedimientos de limpieza y normalización.
 
-Se seleccionó **TF-IDF + Multinomial Naive Bayes** por su desempeño competitivo, sencillez computacional y facilidad de integración en la aplicación.
+Entre las operaciones utilizadas se encuentran:
 
-### Fase 3 — Integración y funcionamiento del sistema
+- Conversión a minúsculas.
+- Normalización de caracteres.
+- Eliminación de elementos innecesarios.
+- Tratamiento de palabras vacías o *stopwords*.
+- Reducción de variaciones lingüísticas.
+- Conservación de negaciones relevantes.
 
-Se desarrolló una solución web que conecta el modelo de aprendizaje automático con un proceso de registro y seguimiento de PQRS.
+El propósito es reducir el ruido de los textos sin eliminar información importante para la clasificación.
 
-Esta fase incorpora:
+#### Vectorización TF-IDF
 
-- Formulario público de radicación.
-- Clasificación automática de urgencia.
-- Generación de números de radicado.
-- Almacenamiento de solicitudes.
-- Notificaciones por correo electrónico.
-- Acceso administrativo.
-- Panel de consulta y seguimiento.
-- Búsqueda y filtros de solicitudes.
-- Actualización del estado de las PQRS.
-- Exportación de información a CSV.
-- Importación masiva de registros.
-- Evaluación de modelos candidatos.
+Se utiliza **TF-IDF (Term Frequency–Inverse Document Frequency)** para convertir las descripciones escritas en representaciones numéricas.
 
-## Arquitectura general
+TF-IDF asigna pesos a los términos según su importancia dentro de un documento y su frecuencia en el conjunto de textos.
 
-El funcionamiento del sistema puede representarse de la siguiente manera:
+De esta manera, los algoritmos de aprendizaje automático pueden procesar las solicitudes.
+
+#### Algoritmos evaluados
+
+Se compararon diferentes modelos y estrategias:
+
+1. Clasificador de clase mayoritaria.
+2. Clasificador basado en palabras clave.
+3. Multinomial Naive Bayes con TF-IDF.
+4. SVM lineal con TF-IDF.
+5. Random Forest con TF-IDF.
+6. Combinaciones de SVD, LDA y clasificadores supervisados.
+
+#### Modelo seleccionado
+
+Se seleccionó **TF-IDF + Multinomial Naive Bayes**.
+
+Esta combinación ofrece un desempeño competitivo, requiere recursos computacionales moderados y permite integrar el clasificador en una aplicación web sin una infraestructura compleja.
+
+### Fase 3 — Integración y aplicación funcional
+
+La tercera fase consistió en integrar el modelo de clasificación en un sistema web para registrar, consultar y gestionar solicitudes.
+
+Se desarrollaron dos componentes principales:
+
+**Aplicación pública**
+
+Permite registrar una PQRS, procesar su descripción, obtener una clasificación automática y generar un radicado.
+
+**Aplicación administrativa**
+
+Permite consultar solicitudes, aplicar filtros, actualizar estados, exportar información y acceder al módulo de carga masiva y evaluación.
+
+Ambas aplicaciones utilizan la infraestructura de almacenamiento y los componentes desarrollados durante las fases anteriores.
+
+---
+
+## 8. Arquitectura del sistema
 
 ```text
-                 USUARIO
-                    |
-                    v
-          FORMULARIO PÚBLICO
-               Flask
-              app.py
-                    |
-                    v
-           REGISTRO DE PQRS
-                    |
-           +--------+--------+
-           |                 |
-           v                 v
-      MODELO PLN         BASE DE DATOS
-      TF-IDF + NB           SQLite
-           |                 |
-           v                 |
-     URGENCIA ESTIMADA       |
-           |                 |
-           +--------+--------+
-                    |
-                    v
-            PANEL ADMINISTRATIVO
-                 admin.py
-                    |
-        +-----------+-----------+
-        |           |           |
-        v           v           v
-     CONSULTA     ESTADOS    EXPORTACIÓN
-     Y FILTROS    DE PQRS       CSV
+                     USUARIO
+                        |
+                        v
+                 FORMULARIO WEB
+                     app.py
+                        |
+                        v
+                REGISTRO DE PQRS
+                        |
+              +---------+---------+
+              |                   |
+              v                   v
+       PROCESAMIENTO PLN      BASE DE DATOS
+              |                 SQLite
+              v                   |
+         VECTOR TF-IDF            |
+              |                   |
+              v                   |
+       MULTINOMIAL NAIVE BAYES    |
+              |                   |
+              v                   |
+       CLASIFICACIÓN AUTOMÁTICA   |
+              |                   |
+              +---------+---------+
+                        |
+                        v
+                 RADICACIÓN Y
+                  SEGUIMIENTO
+                        |
+                        v
+               PANEL ADMINISTRATIVO
+                     admin.py
+                        |
+           +------------+------------+
+           |            |            |
+           v            v            v
+        CONSULTA     GESTIÓN DE   EXPORTACIÓN
+        Y FILTROS     ESTADOS        CSV
 
-        MÓDULO DE DATOS Y MODELO
-                    |
-                    v
-          CARGA MASIVA DE DATOS
-                    |
-                    v
-           VALIDACIÓN DE DATOS
-                    |
-                    v
-        EVALUACIÓN DE CANDIDATO
+               MÓDULO DE DATOS
+                        |
+                        v
+                CARGA MASIVA
+                        |
+                        v
+               VALIDACIÓN DE DATOS
+                        |
+                        v
+             EVALUACIÓN DE CANDIDATO
 ```
 
-El sistema utiliza el modelo guardado para realizar predicciones y una base de datos para conservar la información registrada.
+La clasificación automática se utiliza como apoyo a la priorización de solicitudes.
 
-Las funcionalidades de correo permiten comunicar la radicación y los cambios de estado cuando el servicio de notificaciones está configurado correctamente.
+El modelo no determina por sí mismo el cumplimiento de los plazos normativos ni reemplaza la intervención de las entidades responsables.
 
-## Estructura del repositorio
+---
 
-Los principales archivos y directorios del proyecto son:
+## 9. Estructura del repositorio
 
 ```text
 pqrs-salud-nlp/
@@ -204,31 +321,43 @@ pqrs-salud-nlp/
 |-- figs/
 ```
 
-**Descripción de los componentes principales:**
+### Archivos principales
 
-- `app.py`: aplicación pública de registro y clasificación.
-- `admin.py`: aplicación administrativa.
-- `src/preprocesamiento.py`: funciones de limpieza y normalización.
-- `src/ingesta.py`: procesamiento de nuevas cargas y evaluación.
-- `models/modelo_urgencia.joblib`: modelo serializado utilizado por el sistema.
-- `models/evaluacion_candidato.json`: información de una evaluación de modelo candidato.
-- `data/pqrs.db`: base de datos SQLite.
-- `templates/`: interfaces HTML.
-- `notebooks/`: experimentación y modelado.
-- `results/` y `figs/`: resultados y figuras del análisis.
+| Archivo | Descripción |
+|---|---|
+| `app.py` | Aplicación pública de registro de PQRS |
+| `admin.py` | Aplicación administrativa |
+| `src/preprocesamiento.py` | Limpieza y normalización del texto |
+| `src/ingesta.py` | Ingesta de datos y evaluación |
+| `models/modelo_urgencia.joblib` | Modelo serializado |
+| `models/evaluacion_candidato.json` | Resultados de evaluación de un candidato |
+| `data/pqrs.db` | Base de datos SQLite |
+| `templates/formulario.html` | Formulario público |
+| `templates/admin_login.html` | Acceso administrativo |
+| `templates/admin.html` | Panel administrativo |
+| `templates/carga.html` | Carga masiva y evaluación |
 
-La estructura anterior resume los componentes principales y no necesariamente todos los archivos auxiliares del repositorio.
+La estructura muestra los componentes principales del proyecto y puede incluir archivos auxiliares adicionales.
 
-## Instalación y ejecución
+---
 
-### 1. Clonar el repositorio
+## 10. Instalación y ejecución
+
+### Requisitos
+
+- Python 3.
+- Git.
+- Dependencias incluidas en `requirements.txt`.
+- Navegador web.
+
+### Paso 1. Clonar el repositorio
 
 ```bash
 git clone https://github.com/jorgepelaezp/pqrs-salud-nlp.git
 cd pqrs-salud-nlp
 ```
 
-### 2. Crear el entorno virtual
+### Paso 2. Crear el entorno virtual
 
 En Windows PowerShell:
 
@@ -244,104 +373,122 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-### 3. Instalar dependencias
+### Paso 3. Instalar dependencias
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Descargar recursos de NLTK
+### Paso 4. Descargar recursos de NLTK
 
 ```bash
 python -c "import nltk; nltk.download('stopwords')"
 ```
 
-### 5. Ejecutar la aplicación pública
-
-Desde la raíz del proyecto:
+### Paso 5. Ejecutar la aplicación pública
 
 ```bash
 python app.py
 ```
 
-Dirección de acceso habitual:
+Acceso habitual:
 
 http://127.0.0.1:5000
 
-### 6. Ejecutar el panel administrativo
+### Paso 6. Ejecutar el panel administrativo
 
-Abrir otra terminal, activar el mismo entorno virtual y ejecutar:
+En una segunda terminal, con el entorno virtual activado:
 
 ```bash
 python admin.py
 ```
 
-Dirección de acceso habitual:
+Acceso habitual:
 
 http://127.0.0.1:5001
 
-Los puertos indicados corresponden a la configuración prevista para el prototipo y pueden variar si se modifican los archivos de ejecución.
+Los puertos pueden variar dependiendo de la configuración de los servidores.
 
-**Nota:** Las notificaciones por correo requieren la configuración de las credenciales y variables de entorno correspondientes. No deben publicarse contraseñas, tokens ni secretos en el repositorio.
+**Nota:** El envío de correos electrónicos requiere la configuración correspondiente. Las credenciales y contraseñas no deben almacenarse públicamente en GitHub.
 
-## Funcionalidades de la aplicación
+---
 
-### 1. Registro público de PQRS
+## 11. Funcionalidades del sistema
 
-El usuario puede completar un formulario con la información requerida y describir su solicitud.
+### 11.1. Formulario público de PQRS
 
-El sistema procesa el texto, obtiene una predicción de urgencia y registra la solicitud para su seguimiento.
+El formulario permite registrar información de la solicitud, incluyendo datos de contacto y descripción del caso.
 
-### 2. Clasificación automática
+Al enviarla, el sistema procesa el texto y obtiene una clasificación automática de urgencia.
 
-El texto de la PQRS pasa por el procesamiento lingüístico y el modelo de clasificación.
+La solicitud se almacena para su posterior seguimiento.
 
-La predicción corresponde a una de las siguientes clases:
+### 11.2. Clasificación automática de riesgo
 
-- Baja.
-- Media.
+El modelo analiza el contenido de la descripción y genera una de las tres etiquetas internas:
+
 - Alta.
+- Media.
+- Baja.
 
-La urgencia predicha constituye una **recomendación automática de priorización**, no un diagnóstico médico ni una decisión clínica definitiva.
+Estas etiquetas se relacionan, como referencia de diseño, con Riesgo Vital, Riesgo Priorizado y Riesgo Simple.
 
-### 3. Radicación y notificaciones
+La predicción es una estimación estadística. No sustituye una valoración clínica ni determina automáticamente la categoría jurídica definitiva de un reclamo.
 
-El sistema permite generar un identificador de radicación y comunicar información de la solicitud mediante correo electrónico, según la configuración del servicio.
+### 11.3. Generación de radicado
 
-### 4. Panel administrativo
+El sistema genera un identificador para facilitar la consulta y el seguimiento de la solicitud registrada.
 
-El administrador puede consultar solicitudes registradas, buscar información, aplicar filtros y gestionar el estado de las PQRS.
+### 11.4. Notificaciones por correo electrónico
 
-También dispone de funciones para exportar información y revisar los datos almacenados.
+La aplicación contempla el envío de mensajes relacionados con la radicación y las actualizaciones del estado de las solicitudes.
 
-### 5. Carga masiva de información
+Esta funcionalidad depende de la correcta configuración del servicio de correo.
 
-El módulo de datos permite incorporar nuevos registros desde archivos compatibles, como CSV y Excel.
+### 11.5. Panel administrativo
 
-El proceso contempla la lectura y validación de registros antes de incorporarlos al conjunto de datos.
+El administrador dispone de herramientas para:
 
-Para los conjuntos de entrenamiento de urgencia se utilizan principalmente las columnas:
+- Consultar las PQRS registradas.
+- Buscar solicitudes.
+- Filtrar información.
+- Revisar la clasificación automática.
+- Actualizar estados.
+- Consultar información de seguimiento.
+- Exportar registros.
 
-| Columna | Descripción |
+### 11.6. Exportación de datos
+
+El sistema permite exportar información de solicitudes en formato CSV para su análisis y seguimiento.
+
+### 11.7. Carga masiva de datos
+
+El módulo de datos permite incorporar nuevos registros desde archivos compatibles, como Excel y CSV.
+
+Para la clasificación de urgencia se utilizan principalmente las siguientes columnas:
+
+| Columna | Contenido |
 |---|---|
-| `texto` | Descripción textual de la PQRS |
-| `urgencia` | Etiqueta correspondiente: Baja, Media o Alta |
+| `texto` | Descripción de la PQRS |
+| `urgencia` | Etiqueta Baja, Media o Alta |
 
-La carga masiva facilita ampliar el conjunto de ejemplos y realizar nuevas evaluaciones.
+El proceso permite validar registros antes de incorporarlos al conjunto de datos.
 
-### 6. Evaluación de modelos candidatos
+### 11.8. Evaluación de modelos candidatos
 
-El sistema contempla la evaluación de modelos candidatos a partir de los datos disponibles.
+El sistema permite realizar evaluaciones utilizando los datos disponibles.
 
-Es importante distinguir dos conceptos:
+Es importante diferenciar:
 
-**Modelo desplegado:** modelo serializado que utiliza la aplicación para clasificar solicitudes.
+**Modelo desplegado:** modelo guardado que utiliza la aplicación para realizar predicciones.
 
-**Modelo candidato:** modelo generado o evaluado durante un proceso de experimentación posterior.
+**Modelo candidato:** modelo generado o evaluado a partir de los datos disponibles durante una nueva experimentación.
 
-La evaluación de un candidato **no debe interpretarse automáticamente como su despliegue**. La sustitución del modelo activo requiere comprobar que el procedimiento de actualización se haya ejecutado.
+La evaluación de un candidato no implica necesariamente que se reemplace el modelo activo.
 
-## Resultados de la Fase 2
+---
+
+## 12. Resultados del modelo — Fase 2
 
 La evaluación original se realizó sobre un conjunto de prueba de **584 registros**.
 
@@ -357,21 +504,36 @@ La evaluación original se realizó sobre un conjunto de prueba de **584 registr
 
 ### Interpretación
 
-El modelo seleccionado obtuvo un F1 macro de **0,838**, superando el objetivo académico de 0,75.
+El modelo seleccionado obtuvo un **F1 macro de 0,838**, superando el objetivo académico de 0,75.
 
-El recall de la clase Alta fue **0,832** en el conjunto de prueba original, por debajo del objetivo de 0,85.
+El recall de la clase Alta fue de 0,832 en el conjunto de prueba original.
 
-En validación cruzada se obtuvo un recall Alta de 0,852. Por tanto, el cumplimiento de esta segunda meta no quedó confirmado de forma concluyente por el conjunto de prueba.
+En validación cruzada se obtuvo un recall Alta de 0,852.
 
-La comparación mostró que TF-IDF combinado con Naive Bayes ofrecía un rendimiento competitivo respecto a alternativas más complejas.
+Por lo tanto, aunque los resultados son cercanos al objetivo de 0,85, el conjunto de prueba original no permitió confirmar estrictamente su cumplimiento.
 
-Las evaluaciones también evidenciaron que la clasificación de tipo y tema presentaba resultados inferiores, por lo que el prototipo se centra principalmente en la **priorización por urgencia**.
+La selección de Naive Bayes se fundamentó en su desempeño competitivo y su facilidad de integración.
 
-## Evaluación posterior de la Fase 3
+### Clasificación de tipo y tema
+
+Durante la experimentación también se evaluaron tareas de clasificación de tipo y tema.
+
+Los resultados fueron inferiores a los obtenidos para urgencia:
+
+| Tarea | F1 macro |
+|---|---:|
+| Tipo | 0,235 |
+| Tema | 0,362 |
+
+Por esta razón, el componente principal de inteligencia artificial se concentra en la clasificación de urgencia.
+
+---
+
+## 13. Evaluación posterior — Fase 3
 
 Durante la evolución del proyecto se incorporaron nuevos ejemplos sintéticos y se realizaron evaluaciones adicionales.
 
-En una evaluación agrupada posterior se registraron los siguientes resultados:
+En una evaluación posterior, utilizando una partición agrupada, se registraron los siguientes resultados:
 
 | Indicador | Resultado |
 |---|---:|
@@ -380,83 +542,114 @@ En una evaluación agrupada posterior se registraron los siguientes resultados:
 | F1 macro | 0,8216 |
 | Recall Alta | 0,8492 |
 
-Estos resultados corresponden a una evaluación posterior y **no deben confundirse con los resultados originales de la Fase 2**.
+Esta evaluación es diferente de la realizada originalmente durante la Fase 2.
 
-La partición de datos y la composición del conjunto evaluado pueden afectar las métricas. Por ello, las diferencias entre evaluaciones no demuestran por sí solas una mejora o un deterioro del modelo.
+Los resultados deben interpretarse teniendo en cuenta los datos, la partición utilizada y el procedimiento experimental correspondiente.
 
-### Matriz de confusión
+No se debe asumir que las métricas de un candidato representan automáticamente el rendimiento del modelo desplegado.
 
-La siguiente matriz corresponde a la evaluación posterior con 639 ejemplos:
+---
 
-| Urgencia real / Predicha | Baja | Media | Alta |
+## 14. Matriz de confusión
+
+La matriz de confusión permite analizar los aciertos y errores del clasificador.
+
+En la evaluación posterior de 639 registros se obtuvo:
+
+| Clase real / Predicha | Baja | Media | Alta |
 |---|---:|---:|---:|
 | **Baja** | **221** | 41 | 0 |
 | **Media** | 34 | **195** | 22 |
 | **Alta** | 0 | 19 | **107** |
 
-### Interpretación de la matriz
+### ¿Cómo se interpreta?
 
-Las filas representan las clases reales y las columnas las clases predichas.
+Las filas representan las categorías reales y las columnas las categorías predichas.
 
-Los valores de la diagonal principal representan clasificaciones correctas:
+Los valores de la diagonal principal indican los aciertos del modelo.
 
-- 221 solicitudes de urgencia Baja clasificadas correctamente.
-- 195 solicitudes de urgencia Media clasificadas correctamente.
-- 107 solicitudes de urgencia Alta clasificadas correctamente.
+Los valores fuera de la diagonal representan errores.
 
-Los valores fuera de la diagonal representan errores de clasificación.
+En esta evaluación:
+
+- 221 registros de clase Baja fueron clasificados correctamente.
+- 195 registros de clase Media fueron clasificados correctamente.
+- 107 registros de clase Alta fueron clasificados correctamente.
+- 19 registros realmente clasificados como Alta fueron predichos como Media.
+
+### Recall de la clase Alta
+
+El recall permite conocer qué proporción de los casos realmente pertenecientes a una clase fue identificada correctamente.
 
 Para la clase Alta:
 
-- Existían 126 solicitudes realmente clasificadas como Alta.
-- El modelo identificó correctamente 107.
-- Las 19 restantes fueron clasificadas como Media.
-
-Por tanto:
-
 ```text
-Recall Alta = 107 / (107 + 19)
+Recall Alta = Verdaderos positivos / Total de casos Alta
+
+Recall Alta = 107 / 126
 
 Recall Alta = 0,8492
 
-Recall Alta ≈ 84,92 %
+Recall Alta = 84,92 %
 ```
 
-Este indicador es especialmente importante porque permite medir qué proporción de las solicitudes verdaderamente urgentes es detectada por el sistema.
+Este indicador es especialmente relevante porque la clase Alta se utiliza como representación interna del nivel de riesgo más crítico.
 
-Aunque el resultado se aproxima al objetivo de 0,85, no debe presentarse como una superación estricta de esa meta.
+Aunque el modelo identificó correctamente una proporción importante de estos casos, los errores restantes muestran la necesidad de supervisión humana.
 
-## Evaluaciones posteriores mediante carga masiva
+La evaluación con datos sintéticos no garantiza el mismo comportamiento en situaciones reales.
 
-El módulo de carga masiva permite realizar pruebas con nuevos conjuntos de datos.
+---
 
-Para interpretar correctamente los resultados se recomienda registrar:
+## 15. Métricas de evaluación
 
-- Cantidad de registros incorporados.
-- Cantidad de registros utilizados para entrenamiento y prueba.
-- F1 macro.
-- Recall de la clase Alta.
-- Matriz de confusión.
-- Fecha de evaluación.
-- Estado de despliegue del modelo candidato.
+### Accuracy
 
-Los resultados de cada ejecución deben consultarse en los archivos de evaluación o en la interfaz administrativa.
+Representa la proporción total de predicciones correctas.
 
-No se deben atribuir al modelo activo métricas de un candidato que no haya sido desplegado.
+### Precisión
 
-## Partición y prevención de duplicados
+Mide qué proporción de los registros clasificados por el modelo en una categoría realmente pertenece a ella.
 
-Durante el modelado se consideró la agrupación de textos equivalentes después de su normalización.
+### Recall
 
-El objetivo es evitar que ejemplos idénticos o equivalentes aparezcan simultáneamente en entrenamiento y prueba, situación que podría producir estimaciones excesivamente optimistas del rendimiento.
+Mide qué proporción de los registros reales de una categoría fue detectada correctamente.
 
-En la Fase 2 se utilizaron estrategias de partición y validación agrupada, incluyendo `StratifiedGroupKFold`.
+En este proyecto se presta especial atención al recall de la clase Alta, debido a la importancia de identificar solicitudes potencialmente críticas.
 
-La metodología de cada evaluación debe revisarse junto con sus resultados, especialmente cuando se incorporan nuevos registros.
+### F1-score
 
-## Uso del modelo guardado
+Combina precisión y recall mediante su media armónica.
 
-Ejemplo de carga y predicción:
+### F1 macro
+
+Calcula el promedio del F1-score de todas las clases, otorgándoles el mismo peso.
+
+Esta métrica permite evaluar el desempeño global sin depender exclusivamente de la clase más frecuente.
+
+---
+
+## 16. Reproducibilidad
+
+El notebook principal de experimentación se encuentra en:
+
+```text
+notebooks/Fase2_Modelado_PQRS.ipynb
+```
+
+Para ejecutarlo:
+
+```bash
+jupyter notebook notebooks/Fase2_Modelado_PQRS.ipynb
+```
+
+El conjunto inicial fue generado utilizando semilla 42.
+
+El notebook contiene los procedimientos de preparación de datos, entrenamiento, comparación y evaluación de modelos.
+
+Los resultados pueden variar si se modifican los datos, las versiones de las bibliotecas o los procedimientos de evaluación.
+
+### Uso del modelo guardado
 
 ```python
 import joblib
@@ -473,89 +666,89 @@ texto_procesado = preprocesar(texto)
 
 prediccion = modelo.predict([texto_procesado])
 
-print("Urgencia estimada:", prediccion[0])
+print("Clasificación:", prediccion[0])
 ```
 
-El archivo serializado debe cargarse en un entorno compatible con las versiones de las bibliotecas utilizadas durante su entrenamiento.
+Los modelos serializados deben cargarse únicamente desde fuentes confiables y con versiones compatibles de las dependencias utilizadas durante su entrenamiento.
 
-Por seguridad, solo deben cargarse modelos Joblib provenientes de fuentes confiables.
+---
 
-## Reproducibilidad
+## 17. Limitaciones
 
-El proyecto conserva el notebook de experimentación:
+El proyecto presenta las siguientes limitaciones:
 
-```text
-notebooks/Fase2_Modelado_PQRS.ipynb
-```
+1. **Datos sintéticos:** los ejemplos no representan completamente la diversidad de solicitudes reales.
+2. **Errores de clasificación:** el modelo puede confundir categorías, incluso cuando una solicitud presenta condiciones potencialmente críticas.
+3. **Ambigüedad lingüística:** algunas descripciones pueden contener información insuficiente o contradictoria.
+4. **Dependencia del entrenamiento:** las predicciones están condicionadas por los patrones presentes en los datos utilizados.
+5. **Generalización:** las métricas obtenidas con datos sintéticos no garantizan el desempeño con reclamos reales.
+6. **Correspondencia normativa:** las etiquetas internas Alta, Media y Baja requieren validación adicional para comprobar su alineación con todos los criterios establecidos por la Superintendencia Nacional de Salud.
+7. **Gestión de plazos:** la clasificación automática no equivale a garantizar que una EPS o IPS resuelva efectivamente los reclamos dentro de los términos legales.
+8. **Clasificación de tipo y tema:** estas tareas presentaron un desempeño inferior al de urgencia.
 
-Para ejecutarlo localmente:
+El generador inicial de datos contempla un 8 % de ruido de etiqueta y un 10 % de ambigüedad.
 
-```bash
-jupyter notebook notebooks/Fase2_Modelado_PQRS.ipynb
-```
+Por estas razones, el sistema debe considerarse una prueba de concepto y no una herramienta validada para su uso autónomo en la gestión real de reclamos de salud.
 
-El conjunto inicial fue generado con semilla 42 y el notebook contiene los procedimientos utilizados durante el desarrollo de la Fase 2.
+---
 
-Los resultados pueden variar si se modifican los datos, dependencias, hiperparámetros o procedimientos de evaluación.
+## 18. Consideraciones éticas y legales
 
-## Limitaciones
+El sistema fue desarrollado con fines académicos y de experimentación.
 
-El prototipo presenta las siguientes limitaciones:
+La información utilizada para el entrenamiento y las evaluaciones documentadas es sintética.
 
-1. **Datos sintéticos:** los ejemplos se construyeron artificialmente y pueden no representar la diversidad del lenguaje utilizado en solicitudes reales.
-2. **Variación lingüística:** errores ortográficos, expresiones regionales y narraciones complejas pueden afectar la clasificación.
-3. **Ambigüedad:** una misma solicitud puede contener información asociada a diferentes niveles de urgencia.
-4. **Errores de clasificación:** algunas solicitudes de urgencia Alta pueden clasificarse como Media o Baja.
-5. **Generalización:** el desempeño observado con datos sintéticos no garantiza el mismo resultado en un entorno real.
-6. **Clasificación de tipo y tema:** los resultados de estas tareas fueron inferiores a los obtenidos en la clasificación de urgencia.
-7. **Despliegue:** la evaluación de nuevos candidatos no implica necesariamente la sustitución automática del modelo utilizado por la aplicación.
-
-El generador inicial contempla ruido de etiqueta del 8 % y ambigüedad del 10 %, condiciones que también influyen en el desempeño.
-
-## Consideraciones éticas
-
-El sistema fue desarrollado con fines académicos.
-
-La clasificación automática debe considerarse una herramienta de apoyo y no un mecanismo que sustituya la revisión humana de situaciones que puedan afectar la salud de las personas.
-
-En un eventual despliegue real sería necesario fortalecer:
+En un eventual despliegue real sería necesario considerar:
 
 - Protección de datos personales.
-- Control de acceso.
-- Seguridad de la información.
-- Validación con datos reales autorizados.
+- Confidencialidad de la información de salud.
+- Seguridad de las aplicaciones.
+- Control de acceso administrativo.
+- Validación del modelo con datos reales autorizados.
+- Evaluación de sesgos y errores.
 - Supervisión humana.
-- Evaluación de sesgos.
-- Monitoreo de errores, especialmente en urgencias altas.
+- Procedimientos para identificar y escalar situaciones críticas.
+- Verificación del cumplimiento de las obligaciones legales aplicables.
 
-El prototipo no está validado para tomar decisiones clínicas ni reemplazar sistemas oficiales de atención de emergencias.
+El proyecto toma como referencia la normativa colombiana de clasificación de reclamos en salud, pero no constituye una certificación de cumplimiento regulatorio.
 
-## Posibles mejoras
+---
 
-Entre las mejoras futuras se encuentran:
+## 19. Mejoras futuras
 
-- Evaluación con conjuntos de datos reales, anonimizados y autorizados.
-- Ampliación de la variedad lingüística del entrenamiento.
-- Mejoras en la detección de solicitudes de alta urgencia.
-- Implementación de controles de seguridad adicionales.
-- Registro histórico de evaluaciones y versiones de modelos.
-- Comparación de nuevos algoritmos de PLN.
-- Incorporación de visualizaciones estadísticas adicionales.
-- Despliegue en un entorno de producción después de las validaciones correspondientes.
+Entre las posibles mejoras se encuentran:
 
-## Conclusiones
+1. Ampliar el conjunto de datos con ejemplos diversos y representativos.
+2. Evaluar el modelo con datos reales debidamente anonimizados y autorizados.
+3. Mejorar el recall de la categoría correspondiente al riesgo vital.
+4. Incorporar mecanismos de revisión y escalamiento de solicitudes críticas.
+5. Registrar versiones y resultados históricos de los modelos.
+6. Fortalecer la seguridad y los controles de acceso.
+7. Implementar seguimiento de los plazos normativos aplicables.
+8. Desarrollar visualizaciones adicionales para el análisis administrativo.
+9. Evaluar algoritmos más avanzados de procesamiento del lenguaje natural.
 
-El proyecto demuestra la viabilidad técnica de integrar procesamiento del lenguaje natural y aprendizaje automático en un prototipo para la gestión de PQRS del sector salud.
+---
 
-La combinación de TF-IDF y Multinomial Naive Bayes permitió obtener resultados competitivos en la clasificación de urgencia sobre datos sintéticos.
+## 20. Conclusiones
 
-La integración con Flask y SQLite permitió desarrollar una aplicación que conecta el registro público de solicitudes con herramientas de seguimiento administrativo.
+El proyecto permitió desarrollar un prototipo funcional que integra procesamiento del lenguaje natural, aprendizaje automático y desarrollo web para apoyar la clasificación y priorización de PQRS del sector salud.
 
-Adicionalmente, el módulo de carga masiva facilita incorporar nuevos ejemplos y evaluar candidatos, contribuyendo a la experimentación y al análisis de resultados.
+La combinación de **TF-IDF y Multinomial Naive Bayes** obtuvo resultados competitivos en la clasificación de urgencia sobre datos sintéticos.
 
-Aunque el sistema presenta limitaciones y requiere validaciones adicionales para un uso real, constituye una prueba de concepto de inteligencia artificial aplicada a la priorización de solicitudes.
+La aplicación permite registrar solicitudes, generar radicados, consultar información desde un panel administrativo y realizar operaciones de seguimiento.
 
-## Integrantes
+El módulo de carga masiva amplía las posibilidades de experimentación al facilitar la incorporación de nuevos registros y la evaluación de modelos candidatos.
+
+Uno de los elementos centrales del proyecto es su fundamentación en la clasificación de riesgo utilizada por la **Superintendencia Nacional de Salud de Colombia**, que diferencia los reclamos de riesgo vital, priorizado y simple.
+
+Sin embargo, la alineación normativa completa y el uso del sistema en instituciones reales requerirían validaciones adicionales, procedimientos de supervisión humana y controles operativos.
+
+En conclusión, el proyecto demuestra cómo la inteligencia artificial puede servir como herramienta de apoyo para identificar solicitudes potencialmente críticas y contribuir al análisis de información en el sector salud.
+
+---
+
+## 21. Integrantes
 
 **Grupo 02 — Proyecto de Aula de Inteligencia Artificial**
 
@@ -565,8 +758,24 @@ Aunque el sistema presenta limitaciones y requiere validaciones adicionales para
 
 **Docente:** Lic. Tonny Jiménez  
 **Programa:** Ingeniería de Sistemas  
-**Lugar y año:** Valledupar, 2026
+**Valledupar, Colombia — 2026**
 
 ---
 
-**Nota académica:** Las métricas reportadas corresponden a evaluaciones experimentales con datos sintéticos. No representan una validación clínica ni garantizan el desempeño del sistema en instituciones de salud reales.
+## 22. Referencias
+
+**Superintendencia Nacional de Salud. (2023).** *Circular Externa 2023151000000010-5 de 2023*. https://docs.supersalud.gov.co/PortalWeb/Juridica/CircularesExterna/Circular%20Externa%20No.%202023151000000010-5%20de%202023.pdf
+
+**Pedregosa, F., et al. (2011).** Scikit-learn: Machine Learning in Python. *Journal of Machine Learning Research, 12*, 2825–2830. https://jmlr.org/papers/v12/pedregosa11a.html
+
+**Scikit-learn Developers.** *Feature extraction from text*. https://scikit-learn.org/stable/modules/feature_extraction.html
+
+**Scikit-learn Developers.** *Naive Bayes*. https://scikit-learn.org/stable/modules/naive_bayes.html
+
+**Pallets Projects.** *Flask documentation*. https://flask.palletsprojects.com/
+
+**NLTK Project.** *Natural Language Toolkit*. https://www.nltk.org/
+
+---
+
+**Aviso:** Este repositorio corresponde a un proyecto académico de investigación y desarrollo. Las clasificaciones automáticas son estimaciones experimentales y no sustituyen la valoración humana ni las obligaciones legales de las entidades responsables de la atención en salud.
