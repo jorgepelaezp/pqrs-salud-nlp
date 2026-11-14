@@ -204,7 +204,13 @@
       [hidden] {
         display: none !important;
       }
-    </style>
+    
+/* Identidad visual compartida con el panel administrativo */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+:root{--bg:#f5f7fd;--card:#fff;--tx:#17233c;--mut:#718099;--bd:#e2e8f3;--pri:#5546e8;--ok:#09835b;--warn:#b77913;--err:#c42d42}
+@media(prefers-color-scheme:dark){:root{--bg:#f5f7fd;--card:#fff;--tx:#17233c;--mut:#718099;--bd:#e2e8f3;--pri:#5546e8;--ok:#09835b;--warn:#b77913;--err:#c42d42}}
+body{font-family:'DM Sans','Segoe UI',Arial,sans-serif;background:radial-gradient(circle at 0 0,#efedff 0,transparent 36%),var(--bg)}main{max-width:1100px;padding:42px 22px 75px}h1{font-size:30px;letter-spacing:-.045em;font-weight:800;margin-bottom:8px}h2{font-size:17px;font-weight:800;letter-spacing:-.02em}.sub{font-size:14px;line-height:1.7;margin-bottom:27px}.card{border-radius:18px;padding:25px 27px;margin-bottom:19px;box-shadow:0 12px 40px #263b690b}.stats{gap:14px}.stat b{font-size:30px;font-weight:800;letter-spacing:-.03em}.stat span{font-size:12px}.tabs{gap:9px;margin-bottom:20px}.tab{padding:11px 18px;border-radius:11px;font-weight:700}.tab[aria-selected=true]{background:linear-gradient(110deg,#5546e8,#873ced);box-shadow:0 8px 18px #5546e82b}.drop{background:linear-gradient(135deg,#fbfaff,#f7f8ff);border:2px dashed #bfc5ef;border-radius:15px;padding:46px 22px;transition:.2s}.drop:hover,.drop.over{border-color:#5546e8;background:#f1efff;color:#5546e8}.drop strong{color:var(--tx);font-size:17px}.drop .hint{display:inline-block;margin-top:8px}.btn,button.btn{padding:11px 19px;border-radius:11px;font-weight:700;background:linear-gradient(110deg,#5546e8,#873ced);border-color:#5546e8;box-shadow:0 7px 16px #5546e81e;transition:.18s}.btn:hover:not(:disabled){transform:translateY(-1px)}button.btn.sec{background:#fff;color:#5546e8;box-shadow:none}.badge{background:#f5f6fc;border-color:#e0e5f0;border-radius:999px;padding:4px 11px}textarea,select,input[type=text],input[type=password]{padding:12px 14px;background:#fcfdff;border-color:#dce3ef;border-radius:11px}textarea:focus,select:focus,input:focus{outline:0;border-color:#5546e8;box-shadow:0 0 0 4px #5546e81a}.scroll{border:1px solid var(--bd);border-radius:12px;max-height:330px}th{background:#f8faff;color:#5d6880;font-weight:800}th,td{padding:11px 13px}.extra-row{grid-template-columns:1fr 2fr auto}@media(max-width:650px){main{padding:24px 13px 45px}h1{font-size:25px}.card{padding:19px 17px}.tabs{flex-wrap:wrap}.extra-row{grid-template-columns:1fr}}
+</style>
   </head>
   <body>
     <main>
@@ -579,7 +585,7 @@
               `<span class="err">✗ ${esc(d.error)}</span>`;
           } else {
             $("res-train").innerHTML =
-              `<p class="ok">✓ Modelo actualizado con ${num(d.registros_entrenamiento)} registros.</p>
+              `<p class="ok">${d.modelo_actualizado === false ? "✓ Evaluación completada (modelo actual conservado)" : "✓ Modelo actualizado"} con ${num(d.registros_entrenamiento)} registros.</p>
         <p>F1 macro (prueba, n = ${num(d.registros_prueba)}): <b>${d.f1_macro.toFixed(3).replace(".", ",")}</b></p>
         <p>Recall por clase: ${Object.entries(d.recall_por_clase)
           .map(

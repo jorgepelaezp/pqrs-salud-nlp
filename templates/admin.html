@@ -17,7 +17,6 @@
       body { margin: 0; background: var(--bg); color: var(--ink);
              font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 14.5px; }
       button { font-family: inherit; }
-
       /* ---------- Barra superior ---------- */
       header { position: sticky; top: 0; z-index: 20; background: rgba(255,255,255,.88);
                backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
@@ -35,14 +34,12 @@
                 background: linear-gradient(135deg, #0ea5e9, #6366f1); }
       .user a { color: var(--muted); text-decoration: none; font-weight: 500; padding: 7px 12px; border: 1px solid var(--line); border-radius: 9px; }
       .user a:hover { color: var(--ink); background: #f8fafc; }
-
       main { max-width: 1280px; margin: 0 auto; padding: 28px 24px 56px; }
       .title { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 22px; flex-wrap: wrap; }
       .title h1 { margin: 0; font-size: 26px; letter-spacing: -.02em; }
       .title p { margin: 4px 0 0; color: var(--muted); }
       .live { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
       .live i { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 4px rgba(34,197,94,.18); }
-
       /* ---------- Tarjetas de resumen ---------- */
       .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
       .stat { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px;
@@ -50,7 +47,6 @@
       .stat .ic { flex: none; width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center; }
       .stat b { display: block; font-size: 28px; font-weight: 700; letter-spacing: -.02em; line-height: 1.1; }
       .stat span { color: var(--muted); font-size: 13px; }
-
       .dist { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 22px; }
       .box { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; }
       .box h3 { margin: 0 0 14px; font-size: 14px; font-weight: 600; }
@@ -60,7 +56,6 @@
       .legend div { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
       .legend i { width: 10px; height: 10px; border-radius: 3px; }
       .legend b { color: var(--ink); font-weight: 600; }
-
       /* ---------- Tabla ---------- */
       .panel { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
       .tools { display: flex; gap: 10px; flex-wrap: wrap; padding: 16px 18px; border-bottom: 1px solid var(--line); }
@@ -78,7 +73,6 @@
       .btn.sec { background: #fff; color: var(--ink); border-color: #d5dbe7; }
       .btn.sec:hover { background: #f8fafc; }
       .btn:disabled { cursor: not-allowed; }
-
       .wrap { overflow-x: auto; }
       table { width: 100%; border-collapse: collapse; }
       th { text-align: left; font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted);
@@ -92,7 +86,6 @@
       .who { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .txt { max-width: 300px; color: #475569; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .empty { text-align: center; color: var(--muted); padding: 48px 0; }
-
       .badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px; border-radius: 999px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
       .badge i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
       .Alta { background: var(--alta-bg); color: var(--alta); }
@@ -102,11 +95,9 @@
       .st-en_revision { background: #fef3c7; color: #b45309; }
       .st-respondida { background: #e0f2fe; color: #0369a1; }
       .st-cerrada { background: #d1fae5; color: #047857; }
-
       .pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; border-top: 1px solid var(--line); color: var(--muted); }
       .pager div { display: flex; gap: 8px; }
       .pager .btn { height: 36px; }
-
       /* ---------- Panel lateral de detalle ---------- */
       .veil { position: fixed; inset: 0; background: rgba(15,23,42,.45); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 40; }
       .veil.on { opacity: 1; pointer-events: auto; }
@@ -138,17 +129,22 @@
       .chk input { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--brand); }
       .chk small { display: block; color: var(--muted); }
       .manage .btn { width: 100%; justify-content: center; height: 44px; }
-
       /* ---------- Aviso ---------- */
       #toasts { position: fixed; right: 20px; bottom: 20px; z-index: 80; display: grid; gap: 10px; }
       .toast { min-width: 260px; max-width: 380px; padding: 13px 16px; border-radius: 12px; color: #fff; font-weight: 500; font-size: 14px;
                box-shadow: 0 14px 30px -12px rgba(15,23,42,.5); animation: in .25s ease; display: flex; gap: 10px; align-items: center; }
       .toast.ok { background: #047857; } .toast.warn { background: #b45309; } .toast.err { background: #b91c1c; }
       @keyframes in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-
       @media (max-width: 1000px) { .stats { grid-template-columns: repeat(2, 1fr); } .dist { grid-template-columns: 1fr; } }
       @media (max-width: 600px) { .stats { grid-template-columns: 1fr; } nav { display: none; } .bar { padding: 12px 16px; } main { padding: 20px 14px 40px; } .grid { grid-template-columns: 1fr; } }
-    </style>
+    
+/* Diseño refinado: PQRS Salud */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+:root{--bg:#f5f7fd;--ink:#17233c;--muted:#718099;--line:#e2e8f3;--brand:#5546e8;--brand2:#873ced;--brand-soft:#eeecff;--radius:17px}
+body{font-family:'DM Sans','Segoe UI',Arial,sans-serif;background:radial-gradient(circle at 0 0,#efedff 0,transparent 35%),var(--bg)}
+header{background:rgba(255,255,255,.94);box-shadow:0 2px 16px #202c5408}.bar{padding-top:15px;padding-bottom:15px}.logo .mark{border-radius:12px}.title h1{font-size:29px;letter-spacing:-.04em}.title p{font-size:14px;line-height:1.6}.stats{gap:18px}.stat,.box,.panel{border-color:var(--line);box-shadow:0 10px 35px #27375b0a}.stat{padding:22px;border-radius:17px}.stat b{font-size:30px}.stat .ic{border-radius:14px;width:49px;height:49px}.box{padding:22px 24px}.box h3{font-size:14px;font-weight:800}.stack{height:10px}.panel{border-radius:18px}.tools{padding:19px;gap:11px}.search input,.tools select{height:44px;border-radius:11px;background:#fcfdff;border-color:#dce3ef}.btn{height:44px;border-radius:11px}.btn.pri{background:linear-gradient(110deg,var(--brand),var(--brand2))}th{padding:15px 18px;background:#f8faff}td{padding:17px 18px}tbody tr:hover{background:#f4f3ff}.pager{padding:16px 20px}.drawer{width:min(590px,100%)}.d-head{padding:25px 28px 20px}.d-body{padding:25px 28px}.manage{background:#f1f0ff;border-color:#e2dfff;border-radius:15px;padding:20px}.quote{background:#f9faff}.toast{border-radius:13px}
+@media(max-width:600px){.title h1{font-size:24px}.stat{padding:16px}.box{padding:18px}.tools{padding:14px}.drawer .d-body{padding:19px}.drawer .d-head{padding:19px}}
+</style>
   </head>
   <body>
     <header>
@@ -167,7 +163,6 @@
         </div>
       </div>
     </header>
-
     <main>
       <div class="title">
         <div>
@@ -176,14 +171,11 @@
         </div>
         <span class="live"><i></i> Actualización automática cada 30 s</span>
       </div>
-
       <section class="stats" id="stats"></section>
-
       <section class="dist">
         <div class="box"><h3>Distribución por urgencia</h3><div class="stack" id="stack-urg"></div><div class="legend" id="leg-urg"></div></div>
         <div class="box"><h3>Distribución por estado</h3><div class="stack" id="stack-est"></div><div class="legend" id="leg-est"></div></div>
       </section>
-
       <section class="panel">
         <div class="tools">
           <div class="search">
@@ -198,7 +190,6 @@
             Exportar CSV
           </button>
         </div>
-
         <div class="wrap">
           <table>
             <thead><tr>
@@ -216,11 +207,9 @@
         </div>
       </section>
     </main>
-
     <div class="veil" id="veil"></div>
     <aside class="drawer" id="drawer" aria-hidden="true"></aside>
     <div id="toasts"></div>
-
     <script id="cfg" type="application/json">{{ estados|tojson }}</script>
     <script>
       const ESTADOS = JSON.parse(document.getElementById("cfg").textContent);
@@ -229,7 +218,6 @@
       const COL_EST = { radicada: "#94a3b8", en_revision: "#f59e0b", respondida: "#0ea5e9", cerrada: "#10b981" };
       const POR_PAGINA = 20;
       let pagina = 1, total = 0;
-
       const $ = (id) => document.getElementById(id);
       // Los textos vienen del formulario público: siempre se insertan como texto, nunca como HTML.
       const h = (tag, props = {}, ...hijos) => {
@@ -241,29 +229,24 @@
       const svg = (path) => { const s = h("span"); s.innerHTML =
         `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${path}</svg>`;
         return s.firstChild; };
-
       const badgeUrg = (u) => h("span", { className: "badge " + (u || "") }, h("i"), document.createTextNode(u || "Sin clasificar"));
       const badgeEst = (e) => h("span", { className: "badge st-" + e }, h("i"), document.createTextNode(ETIQ[e] || e || "—"));
-
       function toast(msg, tipo = "ok") {
         const t = h("div", { className: "toast " + tipo, textContent: msg });
         $("toasts").append(t);
         setTimeout(() => t.remove(), 4500);
       }
-
       function params() {
         const p = new URLSearchParams({ pagina, por_pagina: POR_PAGINA });
         const m = { buscar: "buscar", urgencia: "f-urgencia", estado: "f-estado", entidad: "f-entidad" };
         for (const [k, id] of Object.entries(m)) if ($(id).value) p.set(k, $(id).value);
         return p;
       }
-
       async function api(url, opts) {
         const r = await fetch(url, opts);
         if (r.status === 401) { location.href = "/admin/login"; throw new Error("sesión"); }
         return r.json();
       }
-
       /* ---------- Resumen ---------- */
       function barra(contenedor, leyenda, datos, colores, etiquetas = {}) {
         const suma = Object.values(datos).reduce((a, b) => a + b, 0) || 1;
@@ -274,7 +257,6 @@
             document.createTextNode((etiquetas[k] || k) + " "), h("b", { textContent: v })));
         }
       }
-
       async function cargarResumen() {
         const r = await api("/api/admin/resumen");
         const tarjetas = [
@@ -290,13 +272,11 @@
         });
         barra($("stack-urg"), $("leg-urg"), r.urgencia, COL_URG);
         barra($("stack-est"), $("leg-est"), r.estado, COL_EST, ETIQ);
-
         const sel = $("f-entidad"), actual = sel.value;
         sel.replaceChildren(h("option", { value: "", textContent: "Entidad" }));
         r.entidades.forEach((e) => sel.append(h("option", { value: e, textContent: e })));
         sel.value = actual;
       }
-
       /* ---------- Tabla ---------- */
       async function cargarFilas() {
         const r = await api("/api/admin/pqrs?" + params());
@@ -319,10 +299,8 @@
         $("prev").disabled = pagina <= 1;
         $("next").disabled = pagina * POR_PAGINA >= total;
       }
-
       /* ---------- Detalle ---------- */
       function dato(k, v) { return h("div", {}, h("dt", { textContent: k }), h("dd", { textContent: v || "—" })); }
-
       function abrir(p) {
         const d = $("drawer");
         const cerrarBtn = h("button", { className: "x", ariaLabel: "Cerrar", onclick: cerrar });
@@ -330,19 +308,16 @@
         const tags = h("div", { className: "tags" }, badgeUrg(p.urgencia), badgeEst(p.estado));
         const head = h("div", { className: "d-head" },
           h("div", {}, h("h2", { textContent: p.radicado || "#" + p.id }), tags), cerrarBtn);
-
         const solic = h("div", { className: "sec" }, h("h4", { textContent: "Solicitante" }),
           h("dl", { className: "grid" }, dato("Nombre", p.nombre), dato("Correo", p.correo), dato("Radicada", p.fecha), dato("Canal", p.canal)));
         const info = h("div", { className: "sec" }, h("h4", { textContent: "Detalle de la solicitud" }),
           h("dl", { className: "grid" }, dato("Entidad", p.entidad), dato("Ciudad", p.ciudad), dato("Régimen", p.regimen),
             dato("Tipo", p.tipo), dato("Tema", p.tema), dato("Comprobante enviado", p.correo_enviado ? "Sí" : "No")));
         const texto = h("div", { className: "sec" }, h("h4", { textContent: "Texto de la PQRS" }), h("div", { className: "quote", textContent: p.texto }));
-
         const pct = p.prob == null ? 0 : p.prob * 100;
         const modelo = h("div", { className: "sec" }, h("h4", { textContent: "Clasificación del modelo" }),
           h("div", { textContent: p.prob == null ? "Sin probabilidad registrada" : `Urgencia ${p.urgencia} con ${pct.toFixed(1)} % de confianza` }),
           h("div", { className: "meter" }, h("div", { style: `width:${pct}%;background:${COL_URG[p.urgencia] || "#6366f1"}` })));
-
         // Gestión del estado + notificación
         const sel = h("select");
         ESTADOS.forEach((e) => sel.append(h("option", { value: e, textContent: ETIQ[e] || e, selected: e === p.estado })));
@@ -377,7 +352,6 @@
             h("label", { className: "l", textContent: "Estado" }), sel,
             h("label", { className: "l", textContent: "Mensaje para el solicitante" }), nota,
             h("label", { className: "chk" }, chk, chkTxt), guardar));
-
         d.replaceChildren(head, h("div", { className: "d-body" }, solic, info, texto, modelo, gestion));
         d.classList.add("on"); $("veil").classList.add("on"); d.setAttribute("aria-hidden", "false");
       }
@@ -385,7 +359,6 @@
       const abierto = () => $("drawer").classList.contains("on");
       $("veil").onclick = cerrar;
       document.addEventListener("keydown", (e) => { if (e.key === "Escape") cerrar(); });
-
       /* ---------- Eventos ---------- */
       let tBuscar;
       $("buscar").addEventListener("input", () => { clearTimeout(tBuscar); tBuscar = setTimeout(() => { pagina = 1; cargarFilas(); }, 300); });
@@ -396,7 +369,6 @@
         const p = params(); p.delete("pagina"); p.delete("por_pagina");
         location.href = "/api/admin/exportar.csv?" + p;
       };
-
       cargarResumen(); cargarFilas();
       setInterval(() => { if (!abierto()) { cargarResumen(); cargarFilas(); } }, 30000);
     </script>
