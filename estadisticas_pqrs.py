@@ -24,10 +24,26 @@ def palabras(cadena):
     return [p for p in re.findall(r'[a-zñ]{3,}', sin_tildes) if p not in STOP]
 
 
+def histograma(x, grupos=8):
+    """Histograma de frecuencia absoluta; intervalos [inicio, fin), salvo el último."""
+    if not x:
+        return []
+    minimo, maximo = min(x), max(x)
+    if minimo == maximo:
+        return [{'nombre': f'{minimo:.2f}', 'cantidad': len(x)}]
+    paso = (maximo - minimo) / grupos
+    conteo = [0] * grupos
+    for v in x:
+        indice = min(grupos - 1, int((v - minimo) / paso))
+        conteo[indice] += 1
+    return [{'nombre': f'{minimo + i*paso:.1f}–{minimo + (i+1)*paso:.1f}', 'cantidad': n}
+            for i, n in enumerate(conteo)]
+
+
 def resumen_numerico(valores):
     x = sorted(float(v) for v in valores if v is not None)
     if not x:
-        return {'n': 0, 'media': None, 'mediana': None, 'moda': None, 'desviacion': None, 'minimo': None, 'maximo': None, 'q1': None, 'q3': None}
+        return {'n': 0, 'media': None, 'mediana': None, 'moda': None, 'desviacion': None, 'minimo': None, 'maximo': None, 'q1': None, 'q3': None, 'histograma': []}
     def pct(p):
         i = (len(x) - 1) * p
         a = int(i)
@@ -38,7 +54,7 @@ def resumen_numerico(valores):
     def r(v): return round(v, 2) if v is not None else None
     return {'n': len(x), 'media': r(statistics.mean(x)), 'mediana': r(statistics.median(x)),
             'moda': r(moda), 'desviacion': r(statistics.pstdev(x)), 'minimo': r(x[0]),
-            'maximo': r(x[-1]), 'q1': r(pct(.25)), 'q3': r(pct(.75))}
+            'maximo': r(x[-1]), 'q1': r(pct(.25)), 'q3': r(pct(.75)), 'histograma': histograma(x)}
 
 
 def conteos(datos, limite=12):
@@ -62,10 +78,11 @@ def _leer_csvs():
     textos = []
     longitudes = []
     categorias = Counter()
+    tipos = Counter()
     # Solo CSV directos en data/; no lee backups ni subcarpetas para evitar duplicaciones accidentales.
     if not DATASET_DIR.is_dir():
         return {'directorio': str(DATASET_DIR), 'archivos': [], 'total_registros': 0, 'textos_analizados': 0,
-                'advertencias': ['No existe la carpeta del dataset. Configura PQRS_DATASET_DIR.'], 'patrones': patrones([]), 'longitud_palabras': resumen_numerico([]), 'etiquetas': []}
+                'advertencias': ['No existe la carpeta del dataset. Configura PQRS_DATASET_DIR.'], 'patrones': patrones([]), 'longitud_palabras': resumen_numerico([]), 'etiquetas': [], 'tipos': []}
     advertencias = []
     for path in sorted(DATASET_DIR.glob('*.csv')):
         try:
@@ -74,6 +91,7 @@ def _leer_csvs():
                 campos = reader.fieldnames or []
                 lookup = {c.strip().lower(): c for c in campos if c}
                 columna_texto = next((lookup[k] for k in ('texto', 'text', 'descripcion', 'descripcion_pqrs', 'contenido', 'mensaje', 'solicitud') if k in lookup), None)
+                columna_tipo = next((lookup[k] for k in ('tipo', 'tipo_pqrs', 'tipo_solicitud') if k in lookup), None)
                 columna_clase = next((lookup[k] for k in ('urgencia', 'urgencia_predicha', 'clasificacion', 'etiqueta', 'label', 'categoria') if k in lookup), None)
                 n = 0
                 for row in reader:
@@ -86,6 +104,8 @@ def _leer_csvs():
                         longitudes.append(len(str(contenido).split()))
                     if columna_clase and row.get(columna_clase):
                         categorias[str(row[columna_clase]).strip()] += 1
+                    if columna_tipo and row.get(columna_tipo):
+                        tipos[str(row[columna_tipo]).strip()] += 1
                 total += n
                 archivos.append({'archivo': path.name, 'registros': n, 'columna_texto': columna_texto, 'columna_etiqueta': columna_clase})
         except (UnicodeError, csv.Error, OSError) as exc:
@@ -95,7 +115,8 @@ def _leer_csvs():
     return {'directorio': str(DATASET_DIR), 'archivos': archivos, 'total_registros': total,
             'textos_analizados': len(textos), 'advertencias': advertencias,
             'patrones': patrones(textos), 'longitud_palabras': resumen_numerico(longitudes),
-            'etiquetas': [{'nombre': k, 'cantidad': v} for k, v in categorias.most_common(20)]}
+            'etiquetas': [{'nombre': k, 'cantidad': v} for k, v in categorias.most_common(20)],
+            'tipos': [{'nombre': k, 'cantidad': v} for k, v in tipos.most_common(20)]}
 
 
 def obtener_estadisticas():

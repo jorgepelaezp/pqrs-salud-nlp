@@ -1,35 +1,35 @@
 {
-  "fecha": "2026-11-14T08:31:45",
-  "registros_entrenamiento": 3199,
-  "registros_totales": 3199,
-  "registros_ajuste_evaluacion": 2544,
-  "registros_prueba": 655,
-  "f1_macro": 0.8358,
+  "fecha": "2026-11-18T21:38:06",
+  "registros_entrenamiento": 3224,
+  "registros_totales": 3224,
+  "registros_ajuste_evaluacion": 2557,
+  "registros_prueba": 667,
+  "f1_macro": 0.8163,
   "recall_por_clase": {
-    "Baja": 0.8397,
-    "Media": 0.8158,
-    "Alta": 0.8504
+    "Baja": 0.8551,
+    "Media": 0.7582,
+    "Alta": 0.8357
   },
   "precision_por_clase": {
-    "Baja": 0.8765,
-    "Media": 0.7834,
-    "Alta": 0.8504
+    "Baja": 0.8612,
+    "Media": 0.752,
+    "Alta": 0.8357
   },
   "matriz_confusion": [
     [
-      220,
-      41,
-      1
+      242,
+      39,
+      2
     ],
     [
-      31,
-      217,
-      18
+      38,
+      185,
+      21
     ],
     [
-      0,
-      19,
-      108
+      1,
+      22,
+      117
     ]
   ],
   "orden_clases_matriz": [
@@ -39,41 +39,41 @@
   ],
   "reporte_por_clase": {
     "Baja": {
-      "precision": 0.8764940239043825,
-      "recall": 0.8396946564885496,
-      "f1-score": 0.8576998050682261,
-      "support": 262.0
+      "precision": 0.8612099644128114,
+      "recall": 0.8551236749116607,
+      "f1-score": 0.8581560283687943,
+      "support": 283.0
     },
     "Media": {
-      "precision": 0.7833935018050542,
-      "recall": 0.8157894736842105,
-      "f1-score": 0.7992633517495396,
-      "support": 266.0
+      "precision": 0.7520325203252033,
+      "recall": 0.7581967213114754,
+      "f1-score": 0.7551020408163265,
+      "support": 244.0
     },
     "Alta": {
-      "precision": 0.8503937007874016,
-      "recall": 0.8503937007874016,
-      "f1-score": 0.8503937007874016,
-      "support": 127.0
+      "precision": 0.8357142857142857,
+      "recall": 0.8357142857142857,
+      "f1-score": 0.8357142857142857,
+      "support": 140.0
     },
-    "accuracy": 0.8320610687022901,
+    "accuracy": 0.815592203898051,
     "macro avg": {
-      "precision": 0.8367604088322794,
-      "recall": 0.835292610320054,
-      "f1-score": 0.8357856192017223,
-      "support": 655.0
+      "precision": 0.8163189234841002,
+      "recall": 0.8163448939791406,
+      "f1-score": 0.8163241182998022,
+      "support": 667.0
     },
     "weighted avg": {
-      "precision": 0.8336245889207521,
-      "recall": 0.8320610687022901,
-      "f1-score": 0.8325517564782485,
-      "support": 655.0
+      "precision": 0.8159195725459898,
+      "recall": 0.815592203898051,
+      "f1-score": 0.815746707627515,
+      "support": 667.0
     }
   },
   "distribucion": {
-    "Baja": 1334,
-    "Media": 1245,
-    "Alta": 620
+    "Baja": 1342,
+    "Media": 1254,
+    "Alta": 628
   },
   "separacion": "GroupShuffleSplit por texto preprocesado, semilla 42",
   "modelo_actualizado": false,
