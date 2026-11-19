@@ -16,6 +16,7 @@ from sqlalchemy import func, or_, text, select
 from models_db import Pqrs, Session, Solicitante
 from src.carga_api import registrar_carga
 from correo_estado import enviar_cambio_estado
+from estadisticas_pqrs import obtener_estadisticas
 
 ADMIN_USUARIO = os.environ.get("PQRS_ADMIN_USUARIO", "admin")
 ADMIN_CLAVE = os.environ.get("PQRS_ADMIN_CLAVE", "admin")
@@ -110,6 +111,16 @@ def salir():
 @app.get("/")
 def raiz():
     return redirect(url_for("panel"))
+
+
+@app.get("/admin/estadisticas")
+def pagina_estadisticas():
+    return render_template("admin_estadisticas.html")
+
+
+@app.get("/api/admin/estadisticas")
+def api_estadisticas():
+    return jsonify(obtener_estadisticas())
 
 
 @app.get("/admin")
