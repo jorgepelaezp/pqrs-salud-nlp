@@ -119,6 +119,27 @@ def _leer_csvs():
             'tipos': [{'nombre': k, 'cantidad': v} for k, v in tipos.most_common(20)]}
 
 
+
+
+def obtener_evaluacion():
+    """Última evaluación de candidato; no equivale al modelo publicado."""
+    import json
+    carpeta = RAIZ / 'models'
+    for nombre in ('evaluacion_candidato.json', 'metricas_reentrenamiento.json'):
+        ruta = carpeta / nombre
+        if not ruta.is_file():
+            continue
+        try:
+            with ruta.open(encoding='utf-8') as archivo:
+                datos = json.load(archivo)
+            if isinstance(datos, dict):
+                datos['archivo_origen'] = nombre
+                return datos
+        except (OSError, ValueError):
+            continue
+    return {'advertencia': 'Aún no hay una evaluación de reentrenamiento guardada.'}
+
+
 def obtener_estadisticas():
     with Session() as db:
         filas = db.query(Pqrs).all()
@@ -136,7 +157,7 @@ def obtener_estadisticas():
             correcciones = []
         ultimas = {int(pid): nivel for pid, nivel in correcciones}
         riesgo_final = conteos([ultimas.get(p.id, p.urgencia_predicha) for p in filas])
-        return {'dataset': _leer_csvs(), 'pqrs': {
+        return {'evaluacion': obtener_evaluacion(), 'dataset': _leer_csvs(), 'pqrs': {
             'total': len(filas), 'correcciones_eventos': len(correcciones), 'pqrs_corregidas': len(ultimas),
             'textos_analizados': len(textos), 'riesgo_original': riesgo_original, 'riesgo_final': riesgo_final,
             'estados': estado, 'entidades': entidades, 'temas': temas, 'tipos': tipos,
