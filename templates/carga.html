@@ -335,18 +335,41 @@ body{font-family:'DM Sans','Segoe UI',Arial,sans-serif;background:radial-gradien
         <p id="msg-uno" role="status"></p>
       </section>
 
+      <section class="card">
+        <h2>Ciclo de vida del modelo · 12 fases</h2>
+        <p class="hint">Resumen visual del proceso aplicado a PQRS Salud. La división y la evaluación se configuran en el bloque siguiente.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:9px">
+          {% for nombre in ['01 · Problema','02 · Recolección','03 · Exploración EDA','04 · Limpieza','05 · TF-IDF','06 · División','07 · Algoritmo','08 · Entrenamiento','09 · Ajustes','10 · Evaluación','11 · Generalización','12 · Despliegue'] %}
+          <div style="background:#f5f4ff;border:1px solid #e3dfff;border-radius:10px;padding:12px;font-size:13px;font-weight:700;color:#4236a3">{{ nombre }}</div>
+          {% endfor %}
+        </div>
+      </section>
+
       <!-- ===== REENTRENAR ===== -->
       <section class="card">
         <h2>Reentrenar el modelo</h2>
         <p class="hint">
-          Usa el dataset base + los registros cargados. Se evalúa en un 20 %
-          reservado y se guarda una copia del modelo anterior en
-          <code>models/backups/</code>.
+          Usa el dataset base y los registros cargados. Elige cómo dividir los datos
+          para entrenamiento, validación y prueba. Se respeta la agrupación de textos
+          equivalentes para evitar filtraciones entre conjuntos. El botón evalúa un
+          modelo candidato sin reemplazar el modelo vigente.
         </p>
+        <div class="row" style="gap:14px;flex-wrap:wrap">
+          <label>Entrenamiento (%) <input id="pct-tr" type="number" min="5" max="90" value="70" style="width:88px"></label>
+          <label>Validación (%) <input id="pct-va" type="number" min="5" max="90" value="15" style="width:88px"></label>
+          <label>Prueba (%) <input id="pct-te" type="number" min="5" max="90" value="15" style="width:88px"></label>
+        </div>
+        <p class="hint" id="pct-suma">Total: 100 %</p>
+        <div id="split-preview" style="display:flex;height:28px;border-radius:9px;overflow:hidden;margin:12px 0"></div>
         <div class="row">
-          <button class="btn" id="reentrenar">Reentrenar ahora</button>
+          <button class="btn" id="reentrenar">Entrenar y evaluar candidato</button>
         </div>
         <div id="res-train" style="margin-top: 12px" role="status"></div>
+        <div id="matriz-panel" class="card" style="display:none;margin-top:18px">
+          <h2>Matriz de confusión del último entrenamiento</h2>
+          <p class="hint">Filas: clase real · Columnas: predicción. La diagonal representa los aciertos.</p>
+          <div id="matriz-contenido" style="overflow-x:auto"></div>
+        </div>
       </section>
     </main>
 
@@ -573,6 +596,29 @@ body{font-family:'DM Sans','Segoe UI',Arial,sans-serif;background:radial-gradien
         cargarEstado();
       };
 
+      // Vista previa de la división antes de entrenar.
+      function configuracionDivision() {
+        return {entrenamiento:Number($("pct-tr").value),validacion:Number($("pct-va").value),prueba:Number($("pct-te").value)};
+      }
+      function pintarDivision() {
+        const d=configuracionDivision(), total=Object.values(d).reduce((a,b)=>a+b,0);
+        const valido=Object.values(d).every(x=>Number.isInteger(x)&&x>=5&&x<=90)&&total===100;
+        $("pct-suma").textContent=`Total: ${total} %${valido?"":" — Debe sumar 100 %; mínimo 5 % por conjunto"}`;
+        $("pct-suma").style.color=valido?"var(--ok)":"var(--err)";
+        $("reentrenar").disabled=!valido;
+        $("split-preview").innerHTML=[["entrenamiento","#5546e8"],["validacion","#38a6d6"],["prueba","#f59e0b"]].map(([k,color])=>
+          `<div title="${k}: ${d[k]} %" style="width:${Math.max(0,d[k])}%;background:${color};color:white;text-align:center;font-size:12px;line-height:28px">${d[k]}%</div>`).join("");
+      }
+      ["pct-tr","pct-va","pct-te"].forEach(id=>$(id).addEventListener("input",pintarDivision));
+      pintarDivision();
+      function mostrarMatriz(d) {
+        const etiquetas=d.orden_clases_matriz||[], m=d.matriz_confusion||[];
+        if(!etiquetas.length||!m.length)return;
+        const cab=`<tr><th>Real \ Predicción</th>${etiquetas.map(x=>`<th>${esc(x)}</th>`).join("")}</tr>`;
+        const filas=m.map((fila,i)=>`<tr><th>${esc(etiquetas[i])}</th>${fila.map((v,j)=>`<td style="text-align:center;background:${i===j?"#d8f3e5":"#fff0e6"};color:#17233c;font-weight:700">${num(v)}</td>`).join("")}</tr>`).join("");
+        $("matriz-contenido").innerHTML=`<table style="width:100%;border-collapse:collapse">${cab}${filas}</table><p>Entrenamiento: ${num(d.registros_entrenamiento_real)} · Validación: ${num(d.registros_validacion)} · Prueba: ${num(d.registros_prueba)}</p><p>F1 validación: ${Number(d.f1_validacion).toFixed(3)} · F1 prueba: ${Number(d.f1_macro).toFixed(3)}</p>`;
+        $("matriz-panel").style.display="block";
+      }
       // Reentrenar
       $("reentrenar").onclick = async () => {
         $("reentrenar").disabled = true;
@@ -580,7 +626,8 @@ body{font-family:'DM Sans','Segoe UI',Arial,sans-serif;background:radial-gradien
         try {
           const r = await fetch("/api/carga/reentrenar", {
             method: "POST",
-            headers: headers(),
+            headers: {...headers(),"Content-Type":"application/json"},
+            body: JSON.stringify(configuracionDivision()),
           });
           const d = await r.json();
           if (d.error) {
@@ -596,13 +643,14 @@ body{font-family:'DM Sans','Segoe UI',Arial,sans-serif;background:radial-gradien
               `<span class="badge">${esc(riesgoVisible(k))}: ${v.toFixed(3).replace(".", ",")}</span>`,
           )
           .join("")}</p>`;
+            mostrarMatriz(d);
             cargarEstado();
           }
         } catch (e) {
           $("res-train").innerHTML =
             '<span class="err">No se pudo contactar con el servidor.</span>';
         }
-        $("reentrenar").disabled = false;
+        pintarDivision();
       };
 
       cargarEstado();

@@ -120,7 +120,15 @@ def api_reentrenar():
     if not _lock_entrenamiento.acquire(blocking=False):
         return jsonify(error="Ya hay un reentrenamiento en curso."), 409
     try:
-        metricas = ingesta.reentrenar()
+        cuerpo = request.get_json(silent=True) or {}
+        if not isinstance(cuerpo, dict):
+            return jsonify(error="Se esperaba un objeto JSON."), 400
+        metricas = ingesta.reentrenar(
+            entrenamiento=cuerpo.get("entrenamiento", 70),
+            validacion=cuerpo.get("validacion", 15),
+            prueba=cuerpo.get("prueba", 15),
+            actualizar_modelo=False,
+        )
         if _callback["fn"]:
             _callback["fn"]()
         return jsonify(metricas)

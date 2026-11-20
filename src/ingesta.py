@@ -778,7 +778,10 @@ def _cargar_entrenamiento() -> pd.DataFrame:
 # ============================================================
 
 def reentrenar(
-    actualizar_modelo: bool = False
+    actualizar_modelo: bool = False,
+    entrenamiento: int = 70,
+    validacion: int = 15,
+    prueba: int = 15
 ) -> dict:
 
     """
@@ -797,6 +800,10 @@ def reentrenar(
 
     La actualizacion no garantiza una mejora.
     """
+
+    porcentajes = (entrenamiento, validacion, prueba)
+    if any(type(v) is not int or v < 5 or v > 90 for v in porcentajes) or sum(porcentajes) != 100:
+        raise ValueError("Los porcentajes deben ser enteros entre 5 y 90 y sumar 100.")
 
     import joblib
 
@@ -944,19 +951,22 @@ def reentrenar(
 
     grupos = pd.factorize(X)[0]
 
-    separador = GroupShuffleSplit(
-        n_splits=1,
-        test_size=0.2,
-        random_state=42
+    # Separamos grupos de textos idénticos para evitar fuga de información.
+    separador = GroupShuffleSplit(n_splits=1, test_size=prueba / 100, random_state=42)
+    tr_val, te = next(separador.split(X, y, groups=grupos))
+    separador_val = GroupShuffleSplit(
+        n_splits=1, test_size=validacion / (entrenamiento + validacion), random_state=43
     )
-
-    tr, te = next(
-        separador.split(
-            X,
-            y,
-            groups=grupos
-        )
-    )
+    tr_rel, val_rel = next(separador_val.split(
+        X.iloc[tr_val], y.iloc[tr_val], groups=grupos[tr_val]
+    ))
+    tr, va = tr_val[tr_rel], tr_val[val_rel]
+    for nombre, indices in (("entrenamiento", tr), ("validacion", va), ("prueba", te)):
+        if len(indices) < 3 or set(y.iloc[indices]) != set(y):
+            raise ValueError(
+                f"La división dejó el conjunto de {nombre} sin suficientes ejemplos de todas las clases. "
+                "Pruebe otros porcentajes o agregue más datos etiquetados."
+            )
 
     # --------------------------------------------------------
     # 5. ENTRENAR CANDIDATO TEMPORAL
@@ -971,6 +981,7 @@ def reentrenar(
         y.iloc[tr]
     )
 
+    pred_validacion = candidato.predict(X.iloc[va])
     pred = candidato.predict(
         X.iloc[te]
     )
@@ -1050,9 +1061,12 @@ def reentrenar(
             len(tr)
         ),
 
-        "registros_prueba": int(
-            len(te)
-        ),
+        "registros_prueba": int(len(te)),
+        "registros_validacion": int(len(va)),
+        "registros_entrenamiento_real": int(len(tr)),
+        "porcentajes_solicitados": {"entrenamiento": entrenamiento, "validacion": validacion, "prueba": prueba},
+        "porcentajes_reales": {"entrenamiento": round(len(tr)*100/len(X), 2), "validacion": round(len(va)*100/len(X), 2), "prueba": round(len(te)*100/len(X), 2)},
+        "f1_validacion": round(float(f1_score(y.iloc[va], pred_validacion, average="macro")), 4),
 
         "f1_macro": round(
             float(f1), 4
@@ -1088,8 +1102,7 @@ def reentrenar(
         },
 
         "separacion": (
-            "GroupShuffleSplit por texto "
-            "preprocesado, semilla 42"
+            "GroupShuffleSplit por texto preprocesado, semillas 42 y 43; tres conjuntos sin solapamiento"
         ),
 
         "modelo_actualizado": False,

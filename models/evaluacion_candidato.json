@@ -1,35 +1,48 @@
 {
-  "fecha": "2026-11-18T21:38:06",
-  "registros_entrenamiento": 3224,
-  "registros_totales": 3224,
-  "registros_ajuste_evaluacion": 2557,
-  "registros_prueba": 667,
-  "f1_macro": 0.8163,
+  "fecha": "2026-11-20T11:40:03",
+  "registros_entrenamiento": 3248,
+  "registros_totales": 3248,
+  "registros_ajuste_evaluacion": 2279,
+  "registros_prueba": 491,
+  "registros_validacion": 478,
+  "registros_entrenamiento_real": 2279,
+  "porcentajes_solicitados": {
+    "entrenamiento": 70,
+    "validacion": 15,
+    "prueba": 15
+  },
+  "porcentajes_reales": {
+    "entrenamiento": 70.17,
+    "validacion": 14.72,
+    "prueba": 15.12
+  },
+  "f1_validacion": 0.8541,
+  "f1_macro": 0.836,
   "recall_por_clase": {
-    "Baja": 0.8551,
-    "Media": 0.7582,
-    "Alta": 0.8357
+    "Baja": 0.8283,
+    "Media": 0.8154,
+    "Alta": 0.8673
   },
   "precision_por_clase": {
-    "Baja": 0.8612,
-    "Media": 0.752,
-    "Alta": 0.8357
+    "Baja": 0.8865,
+    "Media": 0.7718,
+    "Alta": 0.85
   },
   "matriz_confusion": [
     [
-      242,
-      39,
-      2
+      164,
+      34,
+      0
     ],
     [
-      38,
-      185,
-      21
+      21,
+      159,
+      15
     ],
     [
-      1,
-      22,
-      117
+      0,
+      13,
+      85
     ]
   ],
   "orden_clases_matriz": [
@@ -39,43 +52,43 @@
   ],
   "reporte_por_clase": {
     "Baja": {
-      "precision": 0.8612099644128114,
-      "recall": 0.8551236749116607,
-      "f1-score": 0.8581560283687943,
-      "support": 283.0
+      "precision": 0.8864864864864865,
+      "recall": 0.8282828282828283,
+      "f1-score": 0.856396866840731,
+      "support": 198.0
     },
     "Media": {
-      "precision": 0.7520325203252033,
-      "recall": 0.7581967213114754,
-      "f1-score": 0.7551020408163265,
-      "support": 244.0
+      "precision": 0.7718446601941747,
+      "recall": 0.8153846153846154,
+      "f1-score": 0.7930174563591023,
+      "support": 195.0
     },
     "Alta": {
-      "precision": 0.8357142857142857,
-      "recall": 0.8357142857142857,
-      "f1-score": 0.8357142857142857,
-      "support": 140.0
+      "precision": 0.85,
+      "recall": 0.8673469387755102,
+      "f1-score": 0.8585858585858586,
+      "support": 98.0
     },
-    "accuracy": 0.815592203898051,
+    "accuracy": 0.8309572301425662,
     "macro avg": {
-      "precision": 0.8163189234841002,
-      "recall": 0.8163448939791406,
-      "f1-score": 0.8163241182998022,
-      "support": 667.0
+      "precision": 0.8361103822268872,
+      "recall": 0.8370047941476514,
+      "f1-score": 0.8360000605952306,
+      "support": 491.0
     },
     "weighted avg": {
-      "precision": 0.8159195725459898,
-      "recall": 0.815592203898051,
-      "f1-score": 0.815746707627515,
-      "support": 667.0
+      "precision": 0.8336742017559846,
+      "recall": 0.8309572301425662,
+      "f1-score": 0.8316627245741421,
+      "support": 491.0
     }
   },
   "distribucion": {
-    "Baja": 1342,
-    "Media": 1254,
-    "Alta": 628
+    "Baja": 1350,
+    "Media": 1262,
+    "Alta": 636
   },
-  "separacion": "GroupShuffleSplit por texto preprocesado, semilla 42",
+  "separacion": "GroupShuffleSplit por texto preprocesado, semillas 42 y 43; tres conjuntos sin solapamiento",
   "modelo_actualizado": false,
   "nota": "Evaluacion de un candidato entrenado con una particion de los datos. No constituye una evaluacion independiente del modelo vigente entrenado con todos los registros."
 }
